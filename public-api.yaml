@@ -5,9 +5,9 @@ info:
   title: "MOSTLY AI"
   description: |
     API access to your MOSTLY AI platform.
-    
+
     ### Authentication
-    
+
     To access the endpoints of this API, you must provide a valid API key. You can obtain an API key by signing up on our platform. Once you have your API key, you must include it in all your requests by adding it to the header:
 
     ```
@@ -29,12 +29,16 @@ tags:
     description: "A source data foreign key"
   - name: "Generator Training"
     description: "The training of a generator"
+  - name: "Synthetic Probes"
+    description: "Generate a synthetic probe based on a trained generator"
   - name: "Synthetic Datasets"
     description: "Generate a synthetic dataset based on a trained generator"
   - name: "Synthetic Tables"
     description: "A synthetic data table"
   - name: "Synthetic Generation"
     description: "The generation of a synthetic dataset"
+  - name: "Assistant"
+    description: "An AI-powered Assistant with a Python compute environment"
   - name: "Shares"
     description: "Share resources with other users"
   - name: "Users"
@@ -71,118 +75,130 @@ paths:
     post:
       summary: "Create connector"
       description: |
-        Create a connector, and optionally validate the connection before saving. 
-        
+        Create a connector, and optionally validate the connection before saving.
+
         If validation fails, a 400 status with an error message will be returned.
-        
+
         The structures of the config, secrets and ssl parameters depend on the connector type.
-        Cloud storage:
-        - AZURE_STORAGE
-            - config
-                - accountName: string
-                - clientId: string (required for auth via service principal)
-                - tenantId: string (required for auth via service principal)
-            - secrets
-                - accountKey: string (required for regular auth)
-                - clientSecret: string (required for auth via service principal)
-            - location: container/path
-        - GOOGLE_CLOUD_STORAGE
-            - config
-            - secrets
-                - keyFile: string
-            - location: bucket/path
-        - S3_STORAGE
-            - config
-                - accessKey: string
-            - secrets
-                - secretKey: string
-            - location: bucket/path
-        Database: 
-        - BIGQUERY
-            - config
-            - secrets
-                - keyFile: string        
-            - location: dataset.table
-        - DATABRICKS
-            - config
-                - host: string
-                - httpPath: string
-                - catalog: string
-                - clientId: string (required for auth via service principal)
-                - tenantId: string (required for auth via service principal)
-            - secrets
-                - accessToken: keyFile (required for regular auth)
-                - clientSecret: string (required for auth via service principal)
-            - location: schema.table
-        - HIVE
-            - config
-                - host: string
-                - port: integer, default: 10000
-                - username: string (required for regular auth)
-                - kerberos_enabled: boolean, default: false
-                - kerberos_principal: string (required if kerberos_enabled)
-                - kerberos_krb5_conf: string (required if kerberos_enabled)
-            - secrets
-                - password: string (required for regular auth)
-                - kerberos_keytab: base64-encoded string (required if kerberos_enabled)
-            - location: database.table
-        - MARIADB
-            - config
-                - host: string
-                - port: integer, default: 3306
-                - username: string
-            - secrets
-                - password: string
-            - location: database.table
-        - MSSQL
-            - config
-                - host: string
-                - port: integer, default: 1433
-                - username: string
-                - database: string
-            - secrets
-                - password: string
-            - location: schema.table
-        - MYSQL
-            - config
-                - host: string
-                - port: integer, default: 3306
-                - username: string
-            - secrets
-                - password: string
-            - location: database.table
-        - ORACLE
-            - config
-                - host: string
-                - port: integer, default: 1521
-                - username: string
-                - connectionType: enum {SID, SERVICE_NAME}, default: SID
-                - database: string, default: ORCL
-            - secrets
-                - password: string
-            - location: schema.table
-        - POSTGRES
-            - config
-                - host: string
-                - port: integer, default: 5432
-                - username: string
-                - database: string
-            - secrets
-                - password: string
-            - ssl
-                - rootCertificate: string
-                - sslCertificate: string
-                - sslCertificateKey: string
-            - location: schema.table
-        - SNOWFLAKE
-            - config
-                - account: string
-                - username: string
-                - warehouse: string, default: COMPUTE_WH
-                - database: string
-            - secrets
-                - password: string
-            - location: schema.table
+
+        - Cloud storage:
+          ```yaml
+          - type: AZURE_STORAGE
+            config:
+              accountName: string
+              clientId: string (required for auth via service principal)
+              tenantId: string (required for auth via service principal)
+            secrets:
+              accountKey: string (required for regular auth)
+              clientSecret: string (required for auth via service principal)
+
+          - type: GOOGLE_CLOUD_STORAGE
+            config:
+            secrets:
+              keyFile: string
+
+          - type: S3_STORAGE
+            config:
+              accessKey: string
+              endpointUrl: string (only needed for S3-compatible storage services other than AWS)
+              sslEnabled: boolean, default: false
+            secrets:
+              secretKey: string
+            ssl:
+              caCertificate: base64-encoded string              
+          ```
+        - Database:
+          ```yaml
+          - type: BIGQUERY
+            config:
+            secrets:
+              keyFile: string
+
+          - type: DATABRICKS
+            config:
+              host: string
+              httpPath: string
+              catalog: string
+              clientId: string (required for auth via service principal)
+              tenantId: string (required for auth via service principal)
+            secrets:
+              accessToken: string (required for regular auth)
+              clientSecret: string (required for auth via service principal)
+
+          - type: HIVE
+            config:
+              host: string
+              port: integer, default: 10000
+              username: string (required for regular auth)
+              kerberosEnabled: boolean, default: false
+              kerberosServicePrincipal: string (required if kerberosEnabled)
+              kerberosClientPrincipal: string (optional if kerberosEnabled)              
+              kerberosKrb5Conf: string (required if kerberosEnabled)
+              sslEnabled: boolean, default: false
+            secrets:
+              password: string (required for regular auth)
+              kerberosKeytab: base64-encoded string (required if kerberosEnabled)
+            ssl:
+              caCertificate: base64-encoded string
+
+          - type: MARIADB
+            config:
+              host: string
+              port: integer, default: 3306
+              username: string
+            secrets:
+              password: string
+
+          - type: MSSQL
+            config:
+              host: string
+              port: integer, default: 1433
+              username: string
+              database: string
+            secrets:
+             password: string
+
+          - type: MYSQL
+            config:
+              host: string
+              port: integer, default: 3306
+              username: string
+            secrets:
+              password: string
+
+          - type: ORACLE
+            config:
+              host: string
+              port: integer, default: 1521
+              username: string
+              connectionType: enum {SID, SERVICE_NAME}, default: SID
+              database: string, default: ORCL
+            secrets:
+              password: string
+
+          - type: POSTGRES
+            config:
+              host: string
+              port: integer, default: 5432
+              username: string
+              database: string
+              sslEnabled: boolean, default: false
+            secrets:
+              password: string
+            ssl:
+              rootCertificate: base64-encoded string 
+              sslCertificate: base64-encoded string
+              sslCertificateKey: base64-encoded string
+
+          - type: SNOWFLAKE
+            config:
+              account: string
+              username: string
+              warehouse: string, default: COMPUTE_WH
+              database: string
+            secrets:
+              password: string
+          ```
       operationId: "createConnector"
       tags: [ "Connectors" ]
       requestBody:
@@ -214,9 +230,9 @@ paths:
       summary: "Update connector"
       description: |
         Update a connector, and optionally validate the connection before saving.
-        
+
         If validation fails, a 400 status with an error message will be returned.
-        
+
         For the structure of the config, secrets and ssl parameters, see the CREATE method.
       operationId: "patchConnector"
       tags: [ "Connectors" ]
@@ -263,6 +279,23 @@ paths:
         List the available databases, schemas, tables or folders for a connector.
         For storage connectors, this returns list of folders and files at root, respectively at `prefix` level.
         For DB connectors, this returns list of schemas (or databases for DBs without schema), respectively list of tables if `prefix` is provided.
+
+        The formats of the locations are:
+
+        - Cloud storage:
+            - `AZURE_STORAGE`: `container/path`
+            - `GOOGLE_CLOUD_STORAGE`: `bucket/path`
+            - `S3_STORAGE`: `bucket/path`
+        - Database:
+            - `BIGQUERY`: `dataset.table`
+            - `DATABRICKS`: `schema.table`
+            - `HIVE`: `database.table`
+            - `MARIADB`: `database.table`
+            - `MSSQL`: `schema.table`
+            - `MYSQL`: `database.table`
+            - `ORACLE`: `schema.table`
+            - `POSTGRES`: `schema.table`
+            - `SNOWFLAKE`: `schema.table`
       operationId: "listConnectorLocations"
       tags: [ "Connectors" ]
       parameters:
@@ -280,6 +313,39 @@ paths:
                 type: "array"
                 items:
                   type: "string"
+  /connectors/{id}/schema:
+    parameters:
+      - $ref: "#/components/parameters/connectorIdPath"
+    get:
+      summary: "Get connector table schema"
+      description: |
+        List the available columns, as well as their data type for a connector table.
+      operationId: "getConnectorTableSchema"
+      tags: [ "Connectors" ]
+      parameters:
+        - name: "location"
+          description: "Specifies the target within the connector from which to retrieve the schema. The format of this parameter varies by connector type."
+          in: "query"
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    name:
+                      description: "The name of the column."
+                      type: "string"
+                    originalDataType:
+                      description: "The original vendor-specific data type of the column."
+                      type: "string"
+                    defaultModelEncodingType:
+                      $ref: "#/components/schemas/ModelEncodingType"
   /generators:
     get:
       summary: "List generators"
@@ -370,6 +436,49 @@ paths:
             application/json:
               schema:
                 type: "object"
+  /generators/{id}/export-to-file:
+    parameters:
+      - $ref: "#/components/parameters/generatorIdPath"
+    get:
+      summary: "Export generator as a file"
+      description: |
+        Export the generator as a self-contained single file, that can then be imported as a fully functional
+        generator on a MOSTLY AI server.
+      operationId: "exportGeneratorToFile"
+      tags: [ "Generators" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/zip:
+              schema:
+                type: "string"
+                format: "binary"
+  /generators/import-from-file:
+    post:
+      summary: "Import generator from a file"
+      description: |
+        Import a generator from a self-contained single file, that was previously exported from a MOSTLY AI server.
+      operationId: "importGeneratorFromFile"
+      tags: [ "Generators" ]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Generator"
   /generators/{id}/tables:
     parameters:
       - $ref: "#/components/parameters/generatorIdPath"
@@ -411,7 +520,7 @@ paths:
                   $ref: "#/components/schemas/SourceTablePrimaryKey"
                 modelConfiguration:
                   $ref: "#/components/schemas/ModelConfiguration"
-                textModelConfiguration:
+                languageModelConfiguration:
                   $ref: "#/components/schemas/ModelConfiguration"
               required:
                 - file
@@ -466,6 +575,9 @@ paths:
       summary: "Retrieve model report"
       operationId: "getModelReport"
       tags: [ "Source Tables" ]
+      parameters:
+        - $ref: "#/components/parameters/modelType"
+        - $ref: "#/components/parameters/shortLivedFileToken"
       responses:
         "200":
           description: "OK"
@@ -487,10 +599,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  additionalProperties: true
+                $ref: "#/components/schemas/Samples"
   /generators/{id}/tables/{tableId}/columns/{columnId}:
     parameters:
       - $ref: "#/components/parameters/generatorIdPath"
@@ -615,6 +724,8 @@ paths:
       summary: "Download training logs"
       operationId: "downloadTrainingLogs"
       tags: [ "Generator Training" ]
+      parameters:
+        - $ref: "#/components/parameters/shortLivedFileToken"
       responses:
         "200":
           description: "OK"
@@ -766,6 +877,9 @@ paths:
       summary: "Retrieve synthetic data report"
       operationId: "getDataReport"
       tags: [ "Synthetic Tables" ]
+      parameters:
+        - $ref: "#/components/parameters/shortLivedFileToken"
+        - $ref: "#/components/parameters/modelType"
       responses:
         "200":
           description: "OK"
@@ -832,6 +946,8 @@ paths:
       summary: "Download generation logs"
       operationId: "downloadGenerationLogs"
       tags: [ "Synthetic Generation" ]
+      parameters:
+        - $ref: "#/components/parameters/shortLivedFileToken"
       responses:
         "200":
           description: "OK"
@@ -852,6 +968,7 @@ paths:
           in: "query"
           schema:
             $ref: "#/components/schemas/SyntheticDatasetFormat"
+        - $ref: "#/components/parameters/shortLivedFileToken"
       responses:
         "200":
           description: "OK"
@@ -860,6 +977,245 @@ paths:
               schema:
                 type: "string"
                 format: "binary"
+  /synthetic-probes:
+    post:
+      summary: "Create synthetic probe"
+      operationId: "createSyntheticProbe"
+      tags: [ "Synthetic Probes" ]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateSyntheticProbeRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                items:
+                  $ref: "#/components/schemas/Probe"
+
+  /assistant/settings:
+    get:
+      summary: "Retrieve assistant settings. Only accessible for SuperAdmins."
+      operationId: "getAssistantSettings"
+      tags: [ "Assistant" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantSettings"
+    put:
+      summary: "Update assistant settings. Only accessible for SuperAdmins."
+      operationId: "updateAssistantSettings"
+      tags: [ "Assistant" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantSettings"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantSettings"
+
+  /assistant/threads:
+    get:
+      summary: "List assistant threads"
+      operationId: "listAssistantThreads"
+      tags: [ "Assistant" ]
+      parameters:
+        - $ref: "#/components/parameters/pageOffset"
+        - $ref: "#/components/parameters/pageLimit"
+        - $ref: "#/components/parameters/filterBySearchTerm"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                properties:
+                  totalCount:
+                    $ref: "#/components/schemas/PaginatedTotalCount"
+                  results:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/AssistantThreadListItem"
+    post:
+      summary: "Create assistant thread"
+      operationId: "createAssistantThread"
+      tags: [ "Assistant" ]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateAssistantThreadRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantThread"
+
+  /assistant/threads/{id}:
+    parameters:
+      - $ref: "#/components/parameters/assistantThreadIdPath"
+    get:
+      summary: "Retrieve assistant thread"
+      operationId: "getAssistantThread"
+      tags: [ "Assistant" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantThread"
+    patch:
+      summary: "Update assistant thread"
+      operationId: "patchAssistantThread"
+      tags: [ "Assistant" ]
+      requestBody:
+        $ref: "#/components/requestBodies/PatchAssistantThreadRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantThread"
+    delete:
+      summary: "Delete assistant thread"
+      operationId: "deleteAssistantThread"
+      tags: [ "Assistant" ]
+      responses:
+        "200":
+          description: "OK"
+  /assistant/threads/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/assistantThreadIdPath"
+    get:
+      summary: "Get the session status of a thread"
+      operationId: "getStatus"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    $ref: "#/components/schemas/AssistantThreadSessionStatus"
+  /assistant/threads/{id}/messages:
+    parameters:
+      - $ref: "#/components/parameters/assistantThreadIdPath"
+    post:
+      summary: "Create a message"
+      operationId: "createAssistantMessage"
+      x-codegen-ignore: true
+      tags: [ "Assistant" ]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateAssistantMessageRequest"
+      responses:
+        "200":
+          description: |
+            The newly created messages (excluding the user message)
+            
+            if stream=True then return stream of sever-sent events of type AssistantMessageDelta:
+            
+              data: {id: 'xyz1', role: 'assistant', 'contentType': 'text', delta: 'ok,', finishReason: None}
+              data: {id: 'xyz1', role: 'assistant', 'contentType': 'text', delta: 'I', finishReason: None}
+              data: {id: 'xyz1', role: 'assistant', 'contentType': 'text', delta: 'will,', finishReason: None}
+              data: {id: 'xyz1', role: 'assistant', 'contentType': 'text', delta: 'write', finishReason: None}
+              data: {id: 'xyz1', role: 'assistant', 'contentType': 'text', delta: 'some', finishReason: None}
+              data: {id: 'xyz1', role: 'assistant', 'contentType': 'text', delta: 'python.', finishReason: None}
+
+              data: {id: 'abc2', role: 'assistant', 'contentType': 'python', delta: 'r =', finishReason: None}
+              data: {id: 'abc2', role: 'assistant', 'contentType': 'python', delta: 'r =', finishReason: None}
+              data: {id: 'abc2', role: 'assistant', 'contentType': 'python', delta: 'r', finishReason: None}
+              data: {id: 'abc2', role: 'assistant', 'contentType': 'python', delta: None, finishReason: 'tool_calls'}
+
+              data: {id: 'def3', role: 'tool', 'contentType': 'text', delta: '3', finishReason: 'stop'}
+            
+              data: {id: 'ghi4', role: 'assistant', 'contentType': 'text', delta: 'The', finishReason: None}
+              data: {id: 'ghi4', role: 'assistant', 'contentType': 'text', delta: 'answer', finishReason: None}
+              data: {id: 'ghi4', role: 'assistant', 'contentType': 'text', delta: 'is', finishReason: None}
+              data: {id: 'ghi4', role: 'assistant', 'contentType': 'text', delta: '3!', finishReason: 'stop'}
+
+              data: [DONE]
+
+          #            if stream=False then return array of AssistantMessages:
+          #
+          #              [
+          #                {id: 'xyz1', role: 'assistant', 'contentType': 'text', content: 'ok, I will write some python.', finishReason: 'stop'},
+          #                {id: 'abc2', role: 'assistant', 'contentType': 'python', content: 'r = sqrt(9)\nr', finishReason: 'tool_calls'},
+          #                {id: 'def3', role: 'tool', 'contentType': 'text', content: '3', finishReason: 'stop'},
+          #                {id: 'ghi4', role: 'assistant', 'contentType': 'text', content: 'The answer is 3!', finishReason: 'stop'},
+          #              ]
+
+          content:
+            #            application/json:
+            #              schema:
+            #                type: "array"
+            #                items:
+            #                  - $ref: "#/components/schemas/AssistantMessage"
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/AssistantMessageDelta"
+  /assistant/threads/{id}/file:
+    parameters:
+      - $ref: "#/components/parameters/assistantThreadIdPath"
+    get:
+      summary: "Fetch file in assistant thread"
+      operationId: "fetchAssistantThreadFile"
+      tags: [ "Assistant" ]
+      parameters:
+        - name: "filepath"
+          in: "query"
+          schema:
+            type: "string"
+          required: true
+        - $ref: "#/components/parameters/shortLivedFileToken"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/octet-stream:
+              schema:
+                type: "string"
+                format: "binary"
+    put:
+      summary: "Upload file to assistant thread"
+      operationId: "uploadAssistantThreadFile"
+      tags: [ "Assistant" ]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: "OK"
+  /assistant/threads/{id}/interrupt:
+    parameters:
+      - $ref: "#/components/parameters/assistantThreadIdPath"
+    post:
+      summary: "Interrupt assistant thread streaming"
+      operationId: "interruptAssistantThread"
+      tags: [ "Assistant" ]
+      responses:
+        "200":
+          description: "OK"
 
   /shares/{resourceType}/{resourceId}:
     parameters:
@@ -875,9 +1231,14 @@ paths:
           content:
             application/json:
               schema:
-                type: "array"
-                items:
-                  $ref: "#/components/schemas/Share"
+                type: "object"
+                properties:
+                  isPublic:
+                    type: "boolean"
+                  shares:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/Share"
     post:
       summary: "Share a resource with a user"
       operationId: "createShare"
@@ -893,6 +1254,24 @@ paths:
       tags: [ "Shares" ]
       requestBody:
         $ref: "#/components/requestBodies/DeleteShareRequest"
+      responses:
+        "200":
+          description: "OK"
+  /shares/{resourceType}/{resourceId}/public:
+    parameters:
+      - $ref: "#/components/parameters/resourceIdPath"
+      - $ref: "#/components/parameters/resourceTypePath"
+    put:
+      summary: "Share a resource publicly"
+      operationId: "createPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke a public share of a resource"
+      operationId: "deletePublicShare"
+      tags: [ "Shares" ]
       responses:
         "200":
           description: "OK"
@@ -924,9 +1303,237 @@ paths:
               schema:
                 $ref: "#/components/schemas/CurrentUser"
 
+  /users/me/settings:
+    put:
+      summary: "Update settings"
+      operationId: "updateUserSettings"
+      tags: [ "Users" ]
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUserSettings"
+      responses:
+        "204":
+          description: "OK"
+
+  /computes:
+    get:
+      summary: "List the available computes"
+      description: "List the available computes, sorted by order index. The first returned compute is the default compute."
+      tags: [ "Computes" ]
+      operationId: "listComputes"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ComputeListItem"
+    post:
+      summary: "Create compute"
+      operationId: "createCompute"
+      description: |
+        Create a compute. Only accessible for SuperAdmins.
+
+        The structures of the config and secrets parameters depend on the compute type.
+
+          ```yaml
+          - type: KUBERNETES
+            config:
+              toleration: string
+          - type: DATABRICKS
+            config:
+              instanceURL: string
+              clusterID: string
+            secrets:
+              token: string
+          ```
+      tags: [ "Computes" ]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateComputeRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Compute"
+  /computes/{id}:
+    parameters:
+      - $ref: "#/components/parameters/computeIdPath"
+    get:
+      summary: "Retrieve compute"
+      operationId: "getCompute"
+      description: "Only accessible for SuperAdmins."
+      tags: [ "Computes" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Compute"
+    patch:
+      summary: "Update compute"
+      operationId: "patchCompute"
+      description: |
+        Update a compute. Only accessible for SuperAdmins.
+        
+        For the structure of the config and secrets, see the CREATE method.
+      tags: [ "Computes" ]
+      requestBody:
+        $ref: "#/components/requestBodies/PatchComputeRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Compute"
+    delete:
+      summary: "Delete compute"
+      operationId: "deleteCompute"
+      description: "Only accessible for SuperAdmins."
+      tags: [ "Computes" ]
+      responses:
+        "200":
+          description: "OK"
+
+  /about:
+    get:
+      summary: "Retrieve general info about service"
+      operationId: "getAboutApplication"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    description: Version number of the service
+                    example: "v209"
+                  assistant:
+                    type: boolean
+                    description: Is the assistant service available
+
+  /usage-report/periods:
+    get:
+      summary: "Retrieve usage report by Periods"
+      operationId: "getUsageReportByPeriods"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  usage:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/UsageReportPeriod"
+  /usage-report/download:
+    get:
+      summary: "Download usage report as CSV"
+      operationId: "downloadUsageReport"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/octet-stream:
+              schema:
+                type: "string"
+                format: "binary"
+
+  /models/{modelType}:
+    parameters:
+      - $ref: "#/components/parameters/modelTypePath"
+    get:
+      summary: "List the available models"
+      tags: [ "Models" ]
+      operationId: "listModels"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ModelId"
+  /models/LANGUAGE/config:
+    get:
+      summary: "Get current HuggingFace access key and list the available LANGUAGE models. Only accessible for SuperAdmins."
+      tags: [ "Models" ]
+      operationId: "getModelConfig"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  models:
+                    type: "array"
+                    items:
+                      type: "string"
+                      description: "The model identifiers for the available models, without the LANGUAGE prefix."
+                    example:
+                      - "MOSTLY_AI/LSTM_not_pretrained"
+                      - "mistralai/Mistral-7B-Instruct-v0.2"
+                  huggingFaceToken:
+                    type: "string"
+                    description: "The access token for the HuggingFace model hub."
+    put:
+      summary: "Update the settings for available LANGUAGE models. Only accessible for SuperAdmins."
+      tags: [ "Models" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                models:
+                  type: "array"
+                  items:
+                    type: "string"
+                    description: "The model identifiers for the available models, without the LANGUAGE prefix."
+                  example:
+                    - "MOSTLY_AI/LSTM_not_pretrained"
+                    - "mistralai/Mistral-7B-Instruct-v0.2"
+                huggingFaceToken:
+                  type: "string"
+                  description: "The access token for the HuggingFace model hub."
+      responses:
+        "200":
+          description: "OK"
+
+  /mostly-websocket:
+    get:
+      summary: WebSocket Connection
+      description: Establish a WebSocket connection.
+      responses:
+        101:
+          description: Switching Protocols
+      x-websocket:
+        summary: WebSocket Connection
+        description: |
+          This endpoint establishes a WebSocket connection using stomp protocol.
+          Authorization is done via the `Authorization` connection header with value of Bearer token.
+          After establishing the connection, the client should subscribe to the `/user/<user_id>/` topic to receive notifications.
+          Received messages are in JSON format and have the following structure:
+          ```json
+            {"types":["GENERATOR_CREATED"],"resourceId":"81473b9d-4dd0-4f49-9a5b-72185349ce3f"}
+          ```
+          The `types` field is an array of events and is one of GENERATOR_CREATED, GENERATOR_STATUS_CHANGED, SYNTHETIC_DATASET_CREATED, SYNTHETIC_DATASET_STATUS_CHANGED, GENERATOR_MODEL_SAMPLES_CREATED.
+        protocol: websocket
 
 components:
-
   securitySchemes:
     BearerAuth:
       type: "http"
@@ -1038,7 +1645,7 @@ components:
                       $ref: "#/components/schemas/SourceTableData"
                     modelConfiguration:
                       $ref: "#/components/schemas/ModelConfiguration"
-                    textModelConfiguration:
+                    languageModelConfiguration:
                       $ref: "#/components/schemas/ModelConfiguration"
                     primaryKey:
                       $ref: "#/components/schemas/SourceTablePrimaryKey"
@@ -1070,8 +1677,6 @@ components:
                             $ref: "#/components/schemas/ModelEncodingType"
                         required:
                           - "name"
-                          - "included"
-                          - "modelEncodingType"
 
     PatchGeneratorRequest:
       required: true
@@ -1112,7 +1717,7 @@ components:
                 $ref: "#/components/schemas/SourceTableIncludeChildren"
               modelConfiguration:
                 $ref: "#/components/schemas/ModelConfiguration"
-              textModelConfiguration:
+              languageModelConfiguration:
                 $ref: "#/components/schemas/ModelConfiguration"
             required:
               - "sourceConnectorId"
@@ -1130,7 +1735,7 @@ components:
                 $ref: "#/components/schemas/SourceTablePrimaryKey"
               modelConfiguration:
                 $ref: "#/components/schemas/ModelConfiguration"
-              textModelConfiguration:
+              languageModelConfiguration:
                 $ref: "#/components/schemas/ModelConfiguration"
     CreateSourceForeignKeyRequest:
       required: true
@@ -1157,6 +1762,26 @@ components:
             properties:
               isContext:
                 $ref: "#/components/schemas/ForeignKeyIsContext"
+    CreateSyntheticProbeRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              generatorId:
+                type: "string"
+                format: "uuid"
+                description: Id of generator to create synthetic probe from.
+              tables:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    name:
+                      $ref: "#/components/schemas/SyntheticTableName"
+                    configuration:
+                      $ref: "#/components/schemas/SyntheticTableConfiguration"
     CreateSyntheticDatasetRequest:
       required: true
       content:
@@ -1206,6 +1831,96 @@ components:
               configuration:
                 $ref: "#/components/schemas/SyntheticTableConfiguration"
 
+    UpdateUserSettings:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              assistant:
+                type: "object"
+                properties:
+                  aboutUserMessage:
+                    description: The instruction what the Assistant should know about the user to provide better response
+                    type: string
+                  aboutModelMessage:
+                    description: The instruction how the Assistant should respond
+                    type: string
+    CreateAssistantThreadRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              name:
+                $ref: "#/components/schemas/AssistantThreadName"
+    PatchAssistantThreadRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              name:
+                $ref: "#/components/schemas/AssistantThreadName"
+    CreateAssistantMessageRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            description: "Submit a new message"
+            properties:
+              stream:
+                type: "boolean"
+                default: true
+                nullable: true
+                description: "Whether to stream back partial progress. If set, message deltas will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format) as they become available, with the stream terminated by a data: [DONE] message."
+              content:
+                $ref: "#/components/schemas/AssistantMessageContent"
+              contentType:
+                $ref: "#/components/schemas/AssistantMessageContentType"
+
+    CreateComputeRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              name:
+                $ref: "#/components/schemas/ComputeName"
+              type:
+                $ref: "#/components/schemas/ComputeType"
+              resources:
+                $ref: "#/components/schemas/ComputeResources"
+              config:
+                $ref: "#/components/schemas/ComputeConfig"
+              secrets:
+                $ref: "#/components/schemas/ComputeSecrets"
+              orderIndex:
+                $ref: "#/components/schemas/ComputeOrderIndex"
+    PatchComputeRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              name:
+                $ref: "#/components/schemas/ComputeName"
+              type:
+                $ref: "#/components/schemas/ComputeType"
+              resources:
+                $ref: "#/components/schemas/ComputeResources"
+              config:
+                $ref: "#/components/schemas/ComputeConfig"
+              secrets:
+                $ref: "#/components/schemas/ComputeSecrets"
+              orderIndex:
+                $ref: "#/components/schemas/ComputeOrderIndex"
   parameters:
     pageOffset:
       name: "offset"
@@ -1225,14 +1940,14 @@ components:
         maximum: 1000
     resourceIdPath:
       name: "resourceId"
-      description: "The unique identifier of a resource, i.e. of a connector, generator, or synthetic dataset."
+      description: "The unique identifier of a resource, i.e. of a connector, generator, synthetic dataset or a assistant thread."
       in: "path"
       required: true
       schema:
         type: "string"
     resourceTypePath:
       name: "resourceType"
-      description: "The type of a resource, i.e. of a connector, generator, or synthetic dataset."
+      description: "The type of a resource, i.e. of a connector, generator, synthetic dataset or a assistant thread."
       in: "path"
       required: true
       schema:
@@ -1240,6 +1955,7 @@ components:
           - "connectors"
           - "generators"
           - "synthetic-datasets"
+          - "assistant-threads"
     connectorIdPath:
       name: "id"
       description: "The unique identifier of a connector"
@@ -1247,6 +1963,13 @@ components:
       required: true
       schema:
         type: "string"
+    modelTypePath:
+      name: "modelType"
+      description: "Model type"
+      in: "path"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ModelType"
     filterByConnectorAccessType:
       name: "accessType"
       description: "Filter by access type"
@@ -1282,6 +2005,22 @@ components:
       style: "form"
       schema:
         $ref: "#/components/schemas/SyntheticDatasetReportType"
+    modelType:
+      name: "modelType"
+      description: "Model type"
+      in: "query"
+      style: "form"
+      schema:
+        $ref: "#/components/schemas/ModelType"
+      required: true
+    shortLivedFileToken:
+      name: "slft"
+      description: "A valid short-lived file token (`slft`) for accessing resource artefacts. See `metadata.shortLivedFileToken`."
+      in: "query"
+      style: "form"
+      schema:
+        type: "string"
+      required: true
     generatorIdPath:
       name: "id"
       description: "The unique identifier of a generator"
@@ -1327,6 +2066,20 @@ components:
     syntheticTableIdPath:
       name: "tableId"
       description: "The unique identifier of a synthetic table"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    assistantThreadIdPath:
+      name: "id"
+      description: "The unique identifier of a assistant thread"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    computeIdPath:
+      name: "id"
+      description: "The unique identifier of a compute"
       in: "path"
       required: true
       schema:
@@ -1464,6 +2217,12 @@ components:
           description: "The name of the owner of the entity"
         currentUserPermissionLevel:
           $ref: "#/components/schemas/PermissionLevel"
+        shortLivedFileToken:
+          type: "string"
+          description: |
+            An auto-generated short-lived file token (`slft`) for accessing resource artefacts.
+            The token is always restricted to a single resource, only valid for 60 minutes, and 
+            only accepted by API endpoints that allow to download single files.
     PaginatedTotalCount:
       type: "integer"
       description: "The total number of entities within the list"
@@ -1471,29 +2230,43 @@ components:
       type: "string"
       description: |
         The encoding type used for model training and data generation.
-        This property is only relevant if generation method is AI_MODEL.
-        - CATEGORICAL: Model samples from existing (non-rare) categories.
-        - NUMERIC_AUTO: Model chooses among 3 numeric encoding types based on the values. 
-        - NUMERIC_DISCRETE: Model samples from existing discrete numerical values.
-        - NUMERIC_BINNED: Model samples from binned buckets, to then sample randomly within a bucket.
-        - NUMERIC_DIGIT: Model samples each digit of a numerical value.
-        - CHARACTER: Model samples each character of a string value.
-        - DATETIME: Model samples each part of a datetime value.
-        - DATETIME_RELATIVE: Model samples the relative difference between datetimes within a sequence.
-        - LAT_LONG: Model samples a latitude-longitude column. The format is "latitude,longitude". 
-        - TEXT_MODEL: Model will train a distinct TEXT model for this column.
+        - AUTO: Model chooses among available encoding types based on the column's data type.
+        - TABULAR_CATEGORICAL: Model samples from existing (non-rare) categories.
+        - TABULAR_NUMERIC_AUTO: Model chooses among 3 numeric encoding types based on the values.
+        - TABULAR_NUMERIC_DISCRETE: Model samples from existing discrete numerical values.
+        - TABULAR_NUMERIC_BINNED: Model samples from binned buckets, to then sample randomly within a bucket.
+        - TABULAR_NUMERIC_DIGIT: Model samples each digit of a numerical value.
+        - TABULAR_CHARACTER: Model samples each character of a string value.
+        - TABULAR_DATETIME: Model samples each part of a datetime value.
+        - TABULAR_DATETIME_RELATIVE: Model samples the relative difference between datetimes within a sequence.
+        - TABULAR_LAT_LONG: Model samples a latitude-longitude column. The format is "latitude,longitude".
+        - LANGUAGE_TEXT: Model will train a distinct LANGUAGE model for this column, to then generate free text.
+        # - LANGUAGE_NUMERIC
+        # - LANGUAGE_CATEGORICAL 
+        # - LANGUAGE_DATETIME
+        Encoding types, that are not being prefixed with either TABULAR or LANGUAGE have been deprecated.
       enum:
-        - "CATEGORICAL"
-        - "NUMERIC_AUTO"
-        - "NUMERIC_DISCRETE"
-        - "NUMERIC_BINNED"
-        - "NUMERIC_DIGIT"
-        - "CHARACTER"
-        - "DATETIME"
-        - "DATETIME_RELATIVE"
-        - "LAT_LONG"
-        - "TEXT_MODEL"
-
+        - "AUTO"
+        - "TABULAR_CATEGORICAL"
+        - "TABULAR_NUMERIC_AUTO"
+        - "TABULAR_NUMERIC_DISCRETE"
+        - "TABULAR_NUMERIC_BINNED"
+        - "TABULAR_NUMERIC_DIGIT"
+        - "TABULAR_CHARACTER"
+        - "TABULAR_DATETIME"
+        - "TABULAR_DATETIME_RELATIVE"
+        - "TABULAR_LAT_LONG"
+        - "LANGUAGE_TEXT"
+        - "CATEGORICAL"        # deprecated, use "TABULAR_CATEGORICAL"
+        - "NUMERIC_AUTO"       # deprecated, use "TABULAR_NUMERIC_AUTO"
+        - "NUMERIC_DISCRETE"   # deprecated, use "TABULAR_NUMERIC_DISCRETE"
+        - "NUMERIC_BINNED"     # deprecated, use "TABULAR_NUMERIC_BINNED"
+        - "NUMERIC_DIGIT"      # deprecated, use "TABULAR_NUMERIC_DIGIT"
+        - "CHARACTER"          # deprecated, use "TABULAR_CHARACTER"
+        - "DATETIME"           # deprecated, use "TABULAR_DATETIME"
+        - "DATETIME_RELATIVE"  # deprecated, use "TABULAR_DATETIME_RELATIVE"
+        - "LAT_LONG"           # deprecated, use "TABULAR_LAT_LONG"
+      default: "AUTO"
     # Connector components
     ConnectorId:
       type: "string"
@@ -1645,7 +2418,7 @@ components:
         totalComputeTime:
           type: "integer"
           description: |
-            The total compute time in seconds used for training this generator. 
+            The total compute time in seconds used for training this generator.
             This is the sum of the compute time of all trained tasks.
         noOfSyntheticDatasets:
           type: "integer"
@@ -1670,8 +2443,6 @@ components:
           $ref: "#/components/schemas/GeneratorUsage"
         metadata:
           $ref: "#/components/schemas/Metadata"
-        accuracy:
-          $ref: "#/components/schemas/GeneratorAccuracy"
       required:
         - "id"
         - "trainingStatus"
@@ -1760,9 +2531,11 @@ components:
             $ref: "#/components/schemas/SourceForeignKey"
         modelMetrics:
           $ref: "#/components/schemas/ModelMetrics"
+        languageModelMetrics:
+          $ref: "#/components/schemas/ModelMetrics"
         modelConfiguration:
           $ref: "#/components/schemas/ModelConfiguration"
-        textModelConfiguration:
+        languageModelConfiguration:
           $ref: "#/components/schemas/ModelConfiguration"
         totalRows:
           $ref: "#/components/schemas/SourceTableTotalRows"
@@ -1784,9 +2557,46 @@ components:
       description: "The name of a source column"
     SourceColumnIncluded:
       type: "boolean"
+      default: true
       description: |
         If true, the column will be included in the training.
         If false, the column will be excluded from the training.
+    Probe:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the table
+        rows:
+          $ref: "#/components/schemas/Samples"
+    Samples:
+      type: array
+      items:
+        type: object
+        additionalProperties: true
+    SourceColumnValueRange:
+      description: |
+        The (privacy-safe) range of values detected within a source column. These values can then be used as seed values
+        for conditional generation. For CATEGORICAL and NUMERIC_DISCRETE encoding types, this will be given as a list
+        of unique values, sorted by popularity. For other NUMERIC and for DATETIME encoding types, this will be given
+        as a min and max value. Note, that this property will only be populated, once the analysis step for the training
+        of the generator has been completed.
+      type: "object"
+      properties:
+        min:
+          type: "string"
+          description: "The minimum value of the column. For dates, this is represented in ISO format."
+        max:
+          type: "string"
+          description: "The maximum value of the column. For dates, this is represented in ISO format."
+        values:
+          type: "array"
+          description: "The list of distinct values of the column. Limited to a maximum of 1000 values."
+          items:
+            type: "string"
+        has_null:
+          type: "boolean"
+          description: "If true, null value was detected within the column."
     SourceColumn:
       type: "object"
       properties:
@@ -1798,6 +2608,8 @@ components:
           $ref: "#/components/schemas/SourceColumnIncluded"
         modelEncodingType:
           $ref: "#/components/schemas/ModelEncodingType"
+        valueRange:
+          $ref: "#/components/schemas/SourceColumnValueRange"
       required:
         - "id"
         - "name"
@@ -1839,10 +2651,28 @@ components:
         - isContext
 
     # Model components
+    ModelId:
+      type: "string"
+      description:
+        The model to be used for training.
+      example:
+        - MOSTLY_AI/Small
+        - MOSTLY_AI/Medium
+        - MOSTLY_AI/Large
+        - MOSTLY_AI/LSTMFromScratch-3m
+        - microsoft/phi-1_5
+        - Locutusque/TinyMistral-248M
+    ModelType:
+      type: "string"
+      enum:
+        - "TABULAR"
+        - "LANGUAGE"
     ModelConfiguration:
       type: "object"
       description: "The training configuration for a AI model"
       properties:
+        model:
+          $ref: "#/components/schemas/ModelId"
         maxSampleSize:
           type: "integer"
           description: |
@@ -1857,17 +2687,6 @@ components:
             If not provided, batchSize will be chosen automatically.
           minimum: 1
           maximum: 1000000
-        modelSize:
-          type: "string"
-          description: |
-            The size of the model, with the default being M(edium).
-            Choose S(mall) for faster training, or L(arge) for better results for large dataset.
-            Note, that larger model sizes will require more memory and more compute.
-          enum:
-            - "S"
-            - "M"
-            - "L"
-          default: "M"
         maxTrainingTime:
           type: "integer"
           description: The maximum number of minutes to train the model.
@@ -1882,7 +2701,9 @@ components:
           maximum: 100000
         maxSequenceWindow:
           type: "integer"
-          description: The maximum sequence window to consider for training.
+          description: |
+            The maximum sequence window to consider for training.
+            Only applicable for TABULAR models.
           default: 100
           minimum: 1
           maximum: 100000
@@ -1890,6 +2711,7 @@ components:
           type: "boolean"
           description: |
             If true, then the trained generator can be used for rebalancing and imputation.
+            Only applicable for TABULAR models.
           default: true
         valueProtection:
           description: |
@@ -1898,13 +2720,16 @@ components:
           default: true
         rareCategoryReplacementMethod:
           description: |
-            Specifies, if the rare categories for categoricals will be replaced by a constant 
+            Specifies, if the rare categories for categoricals will be replaced by a constant
             _RARE_ or by a sample from non-rare categories.
+            Only applicable if valueProtection is set to True.
           type: "string"
           enum:
             - "CONSTANT"
             - "SAMPLE"
           default: "CONSTANT"
+        compute:
+          $ref: "#/components/schemas/ComputeId"
     ModelMetrics:
       type: "object"
       properties:
@@ -1946,14 +2771,55 @@ components:
         distances:
           type: "object"
           properties:
+            dcrTraining:
+              description: "The average distance to closest record (L2) between synthetic and training samples within the embedding space."
+              type: "number"
+              format: "float"
+              minimum: 0.0
+            dcrHoldout:
+              description: "The average distance to closest record (L2) between synthetic and holdout samples within the embedding space."
+              type: "number"
+              format: "float"
+              minimum: 0.0
             dcrOriginal:
-              description: "The average DCR between the original records."
+              description: "(DEPRECATED) The average DCR between the original records."
               type: "number"
               format: "float"
+              minimum: 0.0
+              deprecated: true
             dcrSynthetic:
-              description: "The average DCR between the synthetic and the original records."
+              description: "(DEPRECATED) The average DCR between the synthetic and the original records."
               type: "number"
               format: "float"
+              minimum: 0.0
+              deprecated: true
+        similarity:
+          type: "object"
+          properties:
+            cosineSimilarityTrainingSynthetic:
+              description: "The cosine similarity between the training samples centroid and the synthetic samples centroid within the embedding space."
+              type: "number"
+              format: "float"
+              minimum: -1.0
+              maximum: 1.0
+            cosineSimilarityTrainingHoldout:
+              description: "The cosine similarity between the training samples centroid and the holdout samples centroid within the embedding space."
+              type: "number"
+              format: "float"
+              minimum: -1.0
+              maximum: 1.0
+            discriminatorAUCTrainingSynthetic:
+              description: "The cross-validated average AUC of discriminating between training embeddings ans synthetic embeddings."
+              type: "number"
+              format: "float"
+              minimum: 0.0
+              maximum: 1.0
+            discriminatorAUCTrainingHoldout:
+              description: "The cross-validated average AUC of discriminating between training embeddings ans holdout embeddings."
+              type: "number"
+              format: "float"
+              minimum: 0.0
+              maximum: 1.0
 
     # JobProgress components
     JobProgress:
@@ -1971,7 +2837,7 @@ components:
         endDate:
           type: "string"
           description: |
-            The UTC date and time when the job has ended. 
+            The UTC date and time when the job has ended.
             If the job is still, then this is None.
           example: "2024-01-25T12:34:56Z"
           format: "date-time"
@@ -1991,11 +2857,17 @@ components:
         modelLabel:
           type: "string"
           description: |
-            The unique label for the model, consisting of table name and an optional suffix for text model.
+            The unique label for the model, consisting of table name and a suffix for the model type.
             This will be empty for steps that are not related to a model.
           example:
-            - "census"
-            - "census:text"
+            - "census:tabular"
+            - "census:language"
+        computeName:
+          $ref: "#/components/schemas/ComputeName"
+        restarts:
+          type: "integer"
+          format: "int32"
+          description: Number of previous restarts for the corresponding task.
         stepCode:
           type: "string"
           enum:
@@ -2021,7 +2893,7 @@ components:
         endDate:
           type: "string"
           description: |
-            The UTC date and time when the job has ended. 
+            The UTC date and time when the job has ended.
             If the job is still, then this is None.
           example: "2024-01-25T12:34:56Z"
           format: "date-time"
@@ -2030,6 +2902,8 @@ components:
           items:
             type: "object"
             additionalProperties: { }
+        errorMessage:
+          type: "string"
         progress:
           $ref: "#/components/schemas/ProgressValue"
         status:
@@ -2090,7 +2964,7 @@ components:
         totalComputeTime:
           type: "integer"
           description: |
-            The total compute time in seconds used for generating this synthetic dataset. 
+            The total compute time in seconds used for generating this synthetic dataset.
             This is the sum of the compute time of all trained tasks.
         noOfShares:
           type: "integer"
@@ -2171,6 +3045,9 @@ components:
       type: "integer"
       description: |
         Number of generated samples. Only applicable for subject tables.
+        If neither size nor seed is provided, then the default behavior for Synthetic Datasets is to generate the
+        same size of samples as the original, and the default behavior for Synthetic Datasets is to generate one
+        subject only.
       minimum: 1
     SyntheticTableSamplingTemperature:
       description: "temperature for sampling"
@@ -2188,11 +3065,15 @@ components:
       default: 1.0
     SyntheticTableSampleSeedConnectorId:
       description: |
-        The connector id of the seed data for conditional generation. 
+        The connector id of the seed data for conditional generation.
         Only applicable for subject tables.
       type: "string"
       readOnly: true
       format: "uuid"
+    SyntheticTableSampleSeedDict:
+      type: "string"
+      description: |
+        The base64-encoded string derived from a json line file containing the specified sample seed data.
     SyntheticTableSampleSeedData:
       type: "string"
       description: |
@@ -2211,7 +3092,7 @@ components:
         probabilities:
           type: "object"
           description: |
-            The target distribution of samples values. 
+            The target distribution of samples values.
             The keys are the categorical values, and the values are the probabilities.
           example:
             - US: 0.8
@@ -2227,6 +3108,22 @@ components:
         Imputed columns will suppress the sampling of NULL values.
       items:
         type: "string"
+    SyntheticTableFairness:
+      type: "object"
+      description: |
+        Configure a fairness objective for the table. Only applicable for a subject table.
+        The generated synthetic data will maintain robust statistical parity between the target column and 
+        the specified sensitive columns. All these columns must be categorical.
+      properties:
+        targetColumn:
+          type: "string"
+        sensitiveColumns:
+          type: "array"
+          items:
+            type: "string"
+      required:
+        - targetColumn
+        - sensitiveColumns
     SyntheticTableConfiguration:
       type: "object"
       description: "The sample configuration for a synthetic table"
@@ -2235,6 +3132,8 @@ components:
           $ref: "#/components/schemas/SyntheticTableSampleSize"
         sampleSeedConnectorId:
           $ref: "#/components/schemas/SyntheticTableSampleSeedConnectorId"
+        sampleSeedDict:
+          $ref: "#/components/schemas/SyntheticTableSampleSeedDict"
         sampleSeedData:
           $ref: "#/components/schemas/SyntheticTableSampleSeedData"
         samplingTemperature:
@@ -2245,6 +3144,12 @@ components:
           $ref: "#/components/schemas/SyntheticTableRebalancing"
         imputation:
           $ref: "#/components/schemas/SyntheticTableImputation"
+        fairness:
+          $ref: "#/components/schemas/SyntheticTableFairness"
+        tabularCompute:
+          $ref: "#/components/schemas/ComputeId"
+        languageCompute:
+          $ref: "#/components/schemas/ComputeId"
     SyntheticTableId:
       type: "string"
       format: "uuid"
@@ -2252,6 +3157,14 @@ components:
     SyntheticTableName:
       type: "string"
       description: "The name of a synthetic table. This matches the name of a corresponding SourceTable."
+    SyntheticTableTotalRows:
+      type: "integer"
+      description: |
+        The total number of rows for that table in the generated synthetic dataset.
+    SyntheticTableTotalDatapoints:
+      type: "integer"
+      description: |
+        The total number of datapoints for that table in the generated synthetic dataset.
     SyntheticTable:
       type: "object"
       properties:
@@ -2262,6 +3175,8 @@ components:
         configuration:
           $ref: "#/components/schemas/SyntheticTableConfiguration"
         modelMetrics:
+          $ref: "#/components/schemas/ModelMetrics"
+        languageModelMetrics:
           $ref: "#/components/schemas/ModelMetrics"
         foreignKeys:
           type: "array"
@@ -2278,6 +3193,13 @@ components:
               - column
               - referencedTable
               - isContext
+        totalRows:
+          $ref: "#/components/schemas/SyntheticTableTotalRows"
+        totalDatapoints:
+          $ref: "#/components/schemas/SyntheticTableTotalDatapoints"
+        sourceTableTotalRows:
+          $ref: "#/components/schemas/SourceTableTotalRows"
+
     # Delivery components
     SyntheticDatasetDelivery:
       type: "object"
@@ -2297,6 +3219,301 @@ components:
         - "destinationConnectorId"
         - "location"
         - "overwriteTables"
+
+    # Assistant components
+    AssistantSettingsIsEnabled:
+      type: "boolean"
+      description: "If true, the assistant is enabled."
+    AssistantLiteLlmModel:
+      type: "string"
+      description: "The LiteLLM model of the assistant. See https://docs.litellm.ai/docs/providers."
+      example:
+        - "openai/gpt-3.5-turbo"
+        - "mistral/mistral-tiny"
+    AssistantLiteLlmApiKey:
+      type: "string"
+      description: "The API key for the selected LiteLLM model. See https://docs.litellm.ai/docs/providers."
+    AssistantLiteLlmExtra:
+      description: "Any additional configuration parameters for the selected LiteLLM model. See https://docs.litellm.ai/docs/providers."
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          key:
+            type: "string"
+          value:
+            type: "string"
+    AssistantDataLlmApiKey:
+      type: "string"
+      description: "The API key for the DataLLM service. See https://data.mostly.ai."
+    AssistantSystemInstructions:
+      description: "The system instructions of the assistant"
+      type: "string"
+    AssistantCustomInstructions:
+      description: "The custom instructions of the assistant"
+      type: "string"
+    AssistantSettings:
+      type: "object"
+      description: "Additional optional assistant settings used for LiteLLM"
+      properties:
+        isEnabled:
+          $ref: "#/components/schemas/AssistantSettingsIsEnabled"
+        liteLlm:
+          type: "object"
+          properties:
+            model:
+              $ref: "#/components/schemas/AssistantLiteLlmModel"
+            apiKey:
+              $ref: "#/components/schemas/AssistantLiteLlmApiKey"
+            extra:
+              $ref: "#/components/schemas/AssistantLiteLlmExtra"
+        dataLlm:
+          type: "object"
+          properties:
+            apiKey:
+              $ref: "#/components/schemas/AssistantDataLlmApiKey"
+        systemInstructions:
+          $ref: "#/components/schemas/AssistantSystemInstructions"
+        customInstructions:
+          $ref: "#/components/schemas/AssistantCustomInstructions"
+        defaultSystemInstructions:
+          $ref: "#/components/schemas/AssistantSystemInstructions"
+    AssistantThreadId:
+      type: "string"
+      format: "uuid"
+      description: "The unique identifier of a assistant thread"
+    AssistantThreadName:
+      type: "string"
+      description: "The name of a assistant thread"
+    AssistantThreadSessionStatus:
+      type: "string"
+      enum:
+        - "initializing"
+        - "running"
+        - "expired"
+    AssistantThreadListItem:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/AssistantThreadId"
+        metadata:
+          $ref: "#/components/schemas/Metadata"
+        name:
+          $ref: "#/components/schemas/AssistantThreadName"
+        usage:
+          $ref: "#/components/schemas/AssistantThreadUsage"
+      required:
+        - "id"
+        - "metadata"
+    AssistantThread:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/AssistantThreadId"
+        metadata:
+          $ref: "#/components/schemas/Metadata"
+        name:
+          $ref: "#/components/schemas/AssistantThreadName"
+        sessionStatus:
+          $ref: "#/components/schemas/AssistantThreadSessionStatus"
+        messages:
+          type: "array"
+          description: |
+            List of all existing messages, excluding any system message.
+            Example:
+              What's the square root of 9?   role: user        type: text
+              ok, I will write some python   role: assistant   type: text
+              r = math.sqrt(9)\nr            role: assistant   type: python
+              3                              role: tool        type: console
+              The answer is 3!               role: assistant   type: text
+              Plot me a random barplot       role: user        type: text
+              ... plt.savefig() ...          role: assistant   type: python
+              Here is ![img]() ...           role: assistant   type: text
+              Write me a random file         role: user        type: text
+              ... .to_csv() ...              role: assistant   type: python
+              Here is [file]() ...           role: assistant   type: text
+          items:
+            $ref: "#/components/schemas/AssistantMessage"
+        usage:
+          $ref: "#/components/schemas/AssistantThreadUsage"
+    AssistantTokenUsage:
+      type: "number"
+      format: "int64"
+    AssistantMessageId:
+      type: "string"
+      format: "uuid"
+      description: "The unique identifier of a assistant message"
+    AssistantMessageRole:
+      type: "string"
+      description: "The role of the author of this message"
+      enum:
+        - "system"
+        - "user"
+        - "assistant"
+        - "tool"
+        - "heartbeat"
+    AssistantMessageContentType:
+      type: "string"
+      description: "The type of the message content"
+      enum:
+        - "text"
+        - "python"
+        - "console"
+        - "file"
+    AssistantMessageContent:
+      type: "string"
+      minLength: 0
+      maxLength: 65000
+      description: "The content of a message"
+    AssistantMessageContentDelta:
+      type: "string"
+      minLength: 1
+      maxLength: 65000
+      description: "The partial content of a message"
+    AssistantMessageFinishReason:
+      type: "string"
+      enum:
+        - "stop"
+        - "length"
+        - "tool_calls"
+    AssistantMessage:
+      type: "object"
+      description: "A complete message."
+      properties:
+        id:
+          $ref: "#/components/schemas/AssistantMessageId"
+        role:
+          $ref: "#/components/schemas/AssistantMessageRole"
+        contentType:
+          $ref: "#/components/schemas/AssistantMessageContentType"
+        content:
+          $ref: "#/components/schemas/AssistantMessageContent"
+        finishReason:
+          $ref: "#/components/schemas/AssistantMessageFinishReason"
+        tokensConsumed:
+          type: "number"
+          format: "int64"
+          description: "The number of tokens consumed by the assistant message."
+    AssistantMessageDelta:
+      type: "object"
+      description: "A partial message delta generated by streamed model responses."
+      properties:
+        id:
+          $ref: "#/components/schemas/AssistantMessageId"
+        role:
+          $ref: "#/components/schemas/AssistantMessageRole"
+        contentType:
+          $ref: "#/components/schemas/AssistantMessageContentType"
+        delta:
+          $ref: "#/components/schemas/AssistantMessageContentDelta"
+        finishReason:
+          $ref: "#/components/schemas/AssistantMessageFinishReason"
+        tokensConsumed:
+          type: "number"
+          format: "int64"
+          description: "The number of tokens consumed by the model."
+    AssistantThreadUsage:
+      type: "object"
+      properties:
+        noOfShares:
+          type: "integer"
+          description: "Number of shares of this assistant thread."
+        totalTokensConsumed:
+          type: "number"
+          format: "int64"
+          description: "The total number of tokens consumed by the thread."
+    ComputeId:
+      type: "string"
+      format: "uuid"
+    ComputeName:
+      type: "string"
+    ComputeType:
+      type: "string"
+      enum:
+        - "KUBERNETES"
+        # - "DATABRICKS"
+    ComputeOrderIndex:
+      type: "integer"
+      description: "The index for determining the sort order when listing computes"
+    ComputeResources:
+      type: "object"
+      properties:
+        cpus:
+          type: "integer"
+          description: "The number of CPU cores"
+        memory:
+          type: "number"
+          format: "float"
+          description: "The amount of memory in GB"
+        gpus:
+          type: "integer"
+          description: "The number of GPUs"
+          default: 0
+        gpuMemory:
+          type: "number"
+          format: "float"
+          description: "The amount of GPU memory in GB"
+          default: 0
+    ComputeConfig:
+      type: "object"
+      additionalProperties: { }
+    ComputeSecrets:
+      type: "object"
+      additionalProperties: { }
+    ComputeListItem:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/ComputeId"
+        type:
+          $ref: "#/components/schemas/ComputeType"
+        name:
+          $ref: "#/components/schemas/ComputeName"
+        resources:
+          $ref: "#/components/schemas/ComputeResources"
+    Compute:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/ComputeId"
+        name:
+          $ref: "#/components/schemas/ComputeName"
+        type:
+          $ref: "#/components/schemas/ComputeType"
+        config:
+          $ref: "#/components/schemas/ComputeConfig"
+        secrets:
+          $ref: "#/components/schemas/ComputeSecrets"
+        resources:
+          $ref: "#/components/schemas/ComputeResources"
+        orderIndex:
+          $ref: "#/components/schemas/ComputeOrderIndex"
+
+    # Usage Report components
+    UsageReportPeriod:
+      type: "object"
+      description: "The usage report for a specific month"
+      properties:
+        periodStart:
+          description: "The UTC date and time when the reported time period started"
+          type: "string"
+          format: "date-time"
+        periodEnd:
+          description: "The UTC date and time when the reported time period started"
+          type: "string"
+          format: "date-time"
+        totalDatapoints:
+          type: "integer"
+          format: "int64"
+          description: "The number of datapoints generated during the reported period"
+        totalRows:
+          type: "integer"
+          format: "int64"
+          description: "The number of rows generated during the reported period"
+        totalCredits:
+          type: "number"
+          format: "float"
+          description: "The number of credits used during the reported period"
 
 security:
   - ApiKeyAuth: [ ]
