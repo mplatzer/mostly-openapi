@@ -10,13 +10,13 @@ jobs:
   publish-specification:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup | Checkout mostly-app-v2 repository
+      - name: Setup | Checkout repository
         uses: actions/checkout@v4
       
-      - name: Setup | Install Python Installation
+      - name: Setup | Python
         uses: actions/setup-python@v5
       
-      - name: Setup | Install Pip Dependencies
+      - name: Setup | Pip Dependencies
         run: |
           pip install -r hack/postman-publisher/requirements.txt
       
