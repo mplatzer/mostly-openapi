@@ -24,6 +24,6 @@ jobs:
         env:
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
           OPENAPI_SPEC_PATH: public-api.yaml
-          WORKSPACE_NAME: pd-testing
+          WORKSPACE_NAME: MOSTLY AI API Reference
         run: |
           python hack/postman-publisher/main.py
