@@ -115,15 +115,38 @@ def delete_collection(collection_id):
         raise Exception(f"Error deleting collection: {response.text}. Status code: {response.status_code}")
     return
 
+def update_existing_collection(collection_id, spec):
+    logger.info(f"Updating existing collection '{collection_id}' with new OpenAPI spec")
+    logger.info(f"Importing OpenAPI spec to temporary collection")
+    temp_collection_id = import_openapi_spec(spec, workspace_id)
+    temp_collection_url = f"{BASE_URL}/collections/{temp_collection_id}"
+    temp_collection_data = requests.get(temp_collection_url, headers=headers)
+    temp_collection = temp_collection_data.json()
+    delete_collection(temp_collection_id)
+    collection_url = f"{BASE_URL}/collections/{collection_id}"
+    collection_data = requests.get(collection_url, headers=headers)
+    collection = collection_data.json()
+    collection["collection"]["item"] = temp_collection["collection"]["item"]
+    
+    logger.info("Merging collections")
+    update_url = f"{BASE_URL}/collections/{collection_id}"
+    update_response = requests.put(update_url, headers=headers, json=collection)
+    
+    if update_response.status_code != 200:
+        raise Exception(f"Error updating collection: {update_response.text}")
+    logger.info(f"Successfully updated collection '{collection_id}'")
+    return collection_id
+
 if __name__ == "__main__":
     try:
         with open(OPENAPI_SPEC_PATH, 'r') as file:
             openapi_spec = yaml.safe_load(file)
         workspace_id = get_workspace_id(WORKSPACE_NAME)
         collection_id = check_if_collection_exists(COLLECTION_NAME, workspace_id)
-        if collection_id:
-            delete_collection(collection_id)
-        collection_id = import_openapi_spec(openapi_spec, workspace_id)
+        if not collection_id:
+            collection_id = import_openapi_spec(openapi_spec, workspace_id)
+        else:
+            collection_id = update_existing_collection(collection_id, openapi_spec)
         reorganize_folders(collection_id)
 
     except Exception as e:
