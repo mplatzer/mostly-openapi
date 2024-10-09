@@ -1,0 +1,29 @@
+name: Publish OpenAPI Spec to Postman
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish-specification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup | Checkout mostly-app-v2 repository
+        uses: actions/checkout@v4
+      
+      - name: Setup | Install Python Installation
+        uses: actions/setup-python@v5
+      
+      - name: Setup | Install Pip Dependencies
+        run: |
+          pip install -r hack/postman-publisher/requirements.txt
+      
+      - name: Build | Publish OpenAPI Specification to Postman
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          OPENAPI_SPEC_PATH: public-api.yaml
+          WORKSPACE_NAME: pd-testing
+        run: |
+          python hack/postman-publisher/main.py
