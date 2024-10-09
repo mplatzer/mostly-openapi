@@ -127,6 +127,8 @@ def update_existing_collection(collection_id, spec):
     collection_data = requests.get(collection_url, headers=headers)
     collection = collection_data.json()
     collection["collection"]["item"] = temp_collection["collection"]["item"]
+    collection["collection"]["auth"] = temp_collection["collection"]["auth"]
+    collection["collection"]["variable"] = temp_collection["collection"]["variable"]
     
     logger.info("Merging collections")
     update_url = f"{BASE_URL}/collections/{collection_id}"
