@@ -1110,6 +1110,22 @@ paths:
                 properties:
                   status:
                     $ref: "#/components/schemas/AssistantThreadSessionStatus"
+  /assistant/threads/{id}/export:
+    parameters:
+      - $ref: "#/components/parameters/assistantThreadIdPath"
+    get:
+      summary: "Export the assistant thread"
+      operationId: "exportThread"
+      parameters:
+        - $ref: "#/components/parameters/shortLivedFileToken"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/zip:
+              schema:
+                type: "string"
+                format: "binary"
   /assistant/threads/{id}/messages:
     parameters:
       - $ref: "#/components/parameters/assistantThreadIdPath"
