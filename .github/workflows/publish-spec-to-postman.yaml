@@ -18,7 +18,7 @@ jobs:
       
       - name: Setup | Pip Dependencies
         run: |
-          pip install -r hack/postman-publisher/requirements.txt
+          pip install -r scripts/postman-publisher/requirements.txt
       
       - name: Build | Publish OpenAPI Specification to Postman
         env:
@@ -26,4 +26,4 @@ jobs:
           OPENAPI_SPEC_PATH: public-api.yaml
           WORKSPACE_NAME: MOSTLY AI API Reference
         run: |
-          python hack/postman-publisher/main.py
+          python scripts/postman-publisher/main.py
