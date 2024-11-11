@@ -436,6 +436,31 @@ paths:
             application/json:
               schema:
                 type: "object"
+  /generators/{id}/clone:
+    parameters:
+      - $ref: "#/components/parameters/generatorIdPath"
+    post:
+      summary: "Clone generator"
+      description: | 
+        Create a new generator, re-using existing data and model configurations. By setting trainingStatus 
+        to CONTINUE, the model weights are copied as well, and training will continue from there. Note, that
+        in that case, only the training parameters (maxSampleSize, maxEpochs, batchSize, compute, etc.) of 
+        the model configuration can still be modified. Other configurations, like columns, model, and 
+        valueProtection cannot be changed anymore, as these would break compatibility with the existing model 
+        weights.
+      operationId: "cloneGenerator"
+      tags: [ "Generators" ]
+      requestBody:
+        $ref: "#/components/requestBodies/CloneGeneratorRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Generator"
+        "400":
+          $ref: "#/components/responses/BadRequest"
   /generators/{id}/export-to-file:
     parameters:
       - $ref: "#/components/parameters/generatorIdPath"
@@ -1318,6 +1343,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CurrentUser"
+    delete:
+      summary: "Delete the current user"
+      operationId: "deleteCurrentUser"
+      tags: [ "Users" ]
+      responses:
+        "200":
+          description: "OK"
 
   /users/me/settings:
     put:
@@ -1694,6 +1726,19 @@ components:
                         required:
                           - "name"
 
+    CloneGeneratorRequest:
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              trainingStatus:
+                description: "The training status of the new generator."
+                enum:
+                  - "NEW"
+                  - "CONTINUE"
+                default: "NEW"
+
     PatchGeneratorRequest:
       required: true
       content:
@@ -1854,6 +1899,17 @@ components:
           schema:
             type: "object"
             properties:
+              profile:
+                type: "object"
+                properties:
+                  firstName:
+                    type: "string"
+                    description: "First name of the user"
+                    maxLength: 30
+                  lastName:
+                    type: "string"
+                    description: "Last name of the user"
+                    maxLength: 30
               assistant:
                 type: "object"
                 properties:
@@ -2132,17 +2188,22 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/UserId"
-        name:
-          $ref: "#/components/schemas/UserName"
+        firstName:
+          $ref: "#/components/schemas/UserFirstName"
+        lastName:
+          $ref: "#/components/schemas/UserLastName"
         email:
           $ref: "#/components/schemas/UserEmail"
     UserId:
       type: "string"
       format: "uuid"
       description: "The unique identifier of a user"
-    UserName:
+    UserFirstName:
       type: "string"
-      description: "The name of a user"
+      description: "First name of a user"
+    UserLastName:
+      type: "string"
+      description: "Last name of a user"
     UserEmail:
       type: "string"
       description: "The email of a user"
@@ -2163,8 +2224,10 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/UserId"
-        name:
-          $ref: "#/components/schemas/UserName"
+        firstName:
+          $ref: "#/components/schemas/UserFirstName"
+        lastName:
+          $ref: "#/components/schemas/UserLastName"
         email:
           $ref: "#/components/schemas/UserEmail"
         settings:
@@ -2935,6 +2998,7 @@ components:
       description: |
         The status of a job or a step.
         NEW: The job/step is being configured, and has not started yet
+        CONTINUE: The job/step is being configured, but has existing artefacts
         ON_HOLD: The job/step has been started, but is kept on hold
         QUEUED: The job/step has been started, and is awaiting for resources to execute
         IN_PROGRESS: The job/step is currently running
@@ -2943,6 +3007,7 @@ components:
         CANCELED: The job/step has been canceled
       enum:
         - "NEW"
+        - "CONTINUE"
         - "ON_HOLD"
         - "QUEUED"
         - "IN_PROGRESS"
