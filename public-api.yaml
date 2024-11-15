@@ -43,6 +43,8 @@ tags:
     description: "Share resources with other users"
   - name: "Users"
     description: "User management"
+  - name: "Likes"
+    description: "Like, unlike or count likes on resources"
 
 paths:
   /connectors:
@@ -422,6 +424,25 @@ paths:
           description: "OK"
         "400":
           $ref: "#/components/responses/BadRequest"
+  /generators/{id}/like:
+    parameters:
+      - $ref: "#/components/parameters/generatorIdPath"
+    post:
+      summary: "Like a generator"
+      description: "Like the provided generator."
+      operationId: "likeGenerator"
+      tags: [ "Likes" ]
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Unlike a generator"
+      description: "Unlike the provided generator."
+      operationId: "unLikeGenerator"
+      tags: [ "Likes" ]
+      responses:
+        "200":
+          description: "OK"
   /generators/{id}/config:
     parameters:
       - $ref: "#/components/parameters/generatorIdPath"
@@ -826,6 +847,25 @@ paths:
       summary: "Delete synthetic dataset"
       operationId: "deleteSyntheticDataset"
       tags: [ "Synthetic Datasets" ]
+      responses:
+        "200":
+          description: "OK"
+  /synthetic-datasets/{id}/like:
+    parameters:
+      - $ref: "#/components/parameters/syntheticDatasetIdPath"
+    post:
+      summary: "Like a synthetic dataset"
+      description: "Like the provided synthetic dataset."
+      operationId: "likeSyntheticDataset"
+      tags: [ "Likes" ]
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Unlike a synthetic dataset"
+      description: "Unlike the provided synthetic dataset."
+      operationId: "unLikeSyntheticDataset"
+      tags: [ "Likes" ]
       responses:
         "200":
           description: "OK"
@@ -1316,6 +1356,7 @@ paths:
       responses:
         "200":
           description: "OK"
+
   /users/me/key:
     put:
       summary: "Generate API key for current user"
@@ -1361,6 +1402,22 @@ paths:
       responses:
         "204":
           description: "OK"
+
+  /users/me/notifications:
+    get:
+      summary: "Retrieve notifications"
+      description: "Retrieve notifications for the current user. All notifications are marked as read after retrieval."
+      operationId: "getNotifications"
+      tags: [ "Users" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Notification"
 
   /computes:
     get:
@@ -1578,7 +1635,8 @@ paths:
           ```json
             {"types":["GENERATOR_CREATED"],"resourceId":"81473b9d-4dd0-4f49-9a5b-72185349ce3f"}
           ```
-          The `types` field is an array of events and is one of GENERATOR_CREATED, GENERATOR_STATUS_CHANGED, SYNTHETIC_DATASET_CREATED, SYNTHETIC_DATASET_STATUS_CHANGED, GENERATOR_MODEL_SAMPLES_CREATED.
+          The `types` field is an array of events and is one of GENERATOR_CREATED, GENERATOR_STATUS_CHANGED, SYNTHETIC_DATASET_CREATED, SYNTHETIC_DATASET_STATUS_CHANGED, GENERATOR_MODEL_SAMPLES_CREATED, NOTIFICATIONS_UNREAD_COUNT.
+          For the NOTIFICATIONS_UNREAD_COUNT event, the count of unread notifications is included in the message.
         protocol: websocket
 
 components:
@@ -2171,11 +2229,15 @@ components:
           type: "string"
           description: "The name of the entity"
         uri:
-          type: "string"
-          description: "The API service endpoint of the entity"
-          example: "/generators/94c77249-42bf-443a-8e17-6e18a19d60b8"
+          $ref: "#/components/schemas/BaseResourceUri"
         currentUserPermissionLevel:
           $ref: "#/components/schemas/PermissionLevel"
+        currentUserLikeStatus:
+          $ref: "#/components/schemas/UserLikeStatus"
+    BaseResourceUri:
+      type: "string"
+      description: "The API service endpoint of the entity"
+      example: "/generators/94c77249-42bf-443a-8e17-6e18a19d60b8"
     Share:
       type: "object"
       allOf:
@@ -2207,6 +2269,9 @@ components:
     UserEmail:
       type: "string"
       description: "The email of a user"
+    UserUnreadNotifications:
+      type: "integer"
+      description: "Number of unread notifications for the user"
     PermissionLevel:
       type: "string"
       description: |
@@ -2219,6 +2284,9 @@ components:
         - "VIEW"
         - "EDIT"
         - "ADMIN"
+    UserLikeStatus:
+        type: "boolean"
+        description: A boolean indicating whether the user has liked the entity or not
     CurrentUser:
       type: "object"
       properties:
@@ -2234,6 +2302,8 @@ components:
           $ref: "#/components/schemas/UserSettings"
         usage:
           $ref: "#/components/schemas/UserUsage"
+        unreadNotifications:
+          $ref: "#/components/schemas/UserUnreadNotifications"
     UserSettings:
       type: "object"
       description: "Additional optional user settings"
@@ -2278,6 +2348,46 @@ components:
             limit:
               description: "The maximum number of running generation jobs at any time. If empty, then there is no limit."
               type: "integer"
+    Notification:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+          description: "The unique identifier of the notification"
+        type:
+          $ref: "#/components/schemas/NotificationType"
+        message:
+          type: "string"
+          description: "The message of the notification"
+        status:
+          $ref: "#/components/schemas/NotificationStatus"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          description: "The UTC date and time when the notification has been created"
+        resourceUri:
+          $ref: "#/components/schemas/BaseResourceUri"
+      required:
+        - "id"
+        - "type"
+        - "message"
+        - "status"
+        - "createdAt"
+    NotificationStatus:
+      type: "string"
+      description: "The status of the notification"
+      enum:
+        - "UNREAD"
+        - "READ"
+    NotificationType:
+      type: "string"
+      description: "The type of the notification"
+      enum:
+        - "RESOURCE_READY"
+        - "RESOURCE_SHARED"
+        - "RESOURCE_LIKED"
+        - "RESOURCE_FAILED"
     Metadata:
       type: "object"
       readOnly: true
@@ -2296,6 +2406,8 @@ components:
           description: "The name of the owner of the entity"
         currentUserPermissionLevel:
           $ref: "#/components/schemas/PermissionLevel"
+        currentUserLikeStatus:
+          $ref: "#/components/schemas/UserLikeStatus"
         shortLivedFileToken:
           type: "string"
           description: |
@@ -2505,6 +2617,9 @@ components:
         noOfShares:
           type: "integer"
           description: "Number of shares of this generator."
+        noOfLikes:
+          type: "integer"
+          description: "Number of likes of this generator."
     GeneratorListItem:
       type: "object"
       properties:
@@ -2806,8 +2921,40 @@ components:
             - "CONSTANT"
             - "SAMPLE"
           default: "CONSTANT"
+        differentialPrivacy:
+          $ref: "#/components/schemas/ModelConfigurationDifferentialPrivacy"
         compute:
           $ref: "#/components/schemas/ComputeId"
+    ModelConfigurationDifferentialPrivacy:
+      type: "object"
+      description: |
+        The optional differential privacy configuration for training the model. 
+        If not provided, then no differential privacy will be applied.
+      properties:
+        maxEpsilon:
+          type: "number"
+          format: "float"
+          description: |
+            Specifies the maximum allowable epsilon value. If the training process exceeds this threshold, it will be terminated early. Only model checkpoints with epsilon values below this limit will be retained. 
+            If not provided, the training will proceed without early termination based on epsilon constraints.
+          minimum: 0.0
+          maximum: 10000.0
+        noiseMultiplier:
+          type: "number"
+          format: "float"
+          description: |
+            The ratio of the standard deviation of the Gaussian noise to the L2-sensitivity of the function to which the noise is added (How much noise to add).
+          default: 1.5
+          minimum: 0.0
+          maximum: 10000.0
+        maxGradNorm:
+          type: "number"
+          format: "float"
+          description: |
+            The maximum norm of the per-sample gradients for training the model with differential privacy.
+          default: 1.0
+          minimum: 0.0
+          maximum: 10000.0
     ModelMetrics:
       type: "object"
       properties:
@@ -2815,32 +2962,39 @@ components:
           type: "object"
           properties:
             overall:
-              description: "The overall accuracy of the model."
+              description: |
+                The overall accuracy of the model.
+                This is the average of univariate, bivariate and coherence accuracies.
+                Accuracy is defined as (100% - Total Variation Distance) for each distribution, and then averaged across.
               type: "number"
               format: "float"
               minimum: 0.0
               maximum: 1.0
             univariate:
-              description: "The univariate accuracy of the model."
+              description: |
+                The average accuracy of the discretized univariate distributions.
               type: "number"
               format: "float"
               minimum: 0.0
               maximum: 1.0
             bivariate:
-              description: "The bivariate accuracy of the model."
+              description: |
+                The average accuracy of the discretized bivariate distributions.
               type: "number"
               format: "float"
               minimum: 0.0
               maximum: 1.0
             coherence:
-              description: "The coherence accuracy of the model, in case of sequential data."
+              description: |
+                The average accuracy of the discretized coherence distributions.
+                Only applicable for sequential models.
               type: "number"
               format: "float"
               minimum: 0.0
               maximum: 1.0
             overallMax:
               description: |
-                The overall accuracy for an actual holdout dataset.
+                The expected accuracy of a holdout dataset of same size as synthetic dataset.
                 This serves as a reference for the overall accuracy of the trained generator.
               type: "number"
               format: "float"
@@ -3049,6 +3203,9 @@ components:
         noOfShares:
           type: "integer"
           description: "Number of shares of this synthetic dataset."
+        noOfLikes:
+            type: "integer"
+            description: "Number of likes of this synthetic dataset."
     SyntheticDatasetListItem:
       type: "object"
       properties:
