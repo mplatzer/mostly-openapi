@@ -47,6 +47,8 @@ tags:
     description: "Like, unlike or count likes on resources"
 
 paths:
+
+  # CONNECTORS
   /connectors:
     get:
       summary: "List connectors"
@@ -204,7 +206,11 @@ paths:
       operationId: "createConnector"
       tags: [ "Connectors" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateConnectorRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectorConfig"
       responses:
         "200":
           description: "OK"
@@ -239,7 +245,11 @@ paths:
       operationId: "patchConnector"
       tags: [ "Connectors" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchConnectorRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectorPatchConfig"
       responses:
         "200":
           description: "OK"
@@ -262,7 +272,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/connectorIdPath"
     get:
-      summary: "Retrieve writeable connector properties as a JSON"
+      summary: "Retrieve configurable Connector properties as JSON"
       operationId: "getConnectorConfig"
       tags: [ "Connectors" ]
       responses:
@@ -271,7 +281,7 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ConnectorConfig"
   /connectors/{id}/locations:
     parameters:
       - $ref: "#/components/parameters/connectorIdPath"
@@ -348,6 +358,70 @@ paths:
                       type: "string"
                     defaultModelEncodingType:
                       $ref: "#/components/schemas/ModelEncodingType"
+  /connectors/{id}/share:
+    parameters:
+      - $ref: "#/components/parameters/connectorIdPath"
+    get:
+      summary: "List shared users"
+      description: "List all users that the connector is shared with."
+      operationId: "listConnectorShares"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceShares"
+    post:
+      summary: "Share connector"
+      description: "Share the provided connector with the provided user."
+      operationId: "shareConnector"
+      tags: [ "Shares" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareConfig"
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke connector share"
+      description: "Revoke a connector share with the provided user."
+      operationId: "deleteConnectorShare"
+      tags: [ "Shares" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareDeleteConfig"
+      responses:
+        "200":
+          description: "OK"
+  /connectors/{id}/share/public:
+    parameters:
+      - $ref: "#/components/parameters/connectorIdPath"
+    put:
+      summary: "Share connector publicly"
+      description: "Share the provided connector publicly."
+      operationId: "createConnectorPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke connector public share"
+      description: "Revoke a connector public share."
+      operationId: "deleteConnectorPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+
+  # GENERATORS
   /generators:
     get:
       summary: "List generators"
@@ -378,7 +452,11 @@ paths:
       operationId: "createGenerator"
       tags: [ "Generators" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateGeneratorRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeneratorConfig"
       responses:
         "200":
           description: "OK"
@@ -407,7 +485,11 @@ paths:
       operationId: "updateGenerator"
       tags: [ "Generators" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchGeneratorRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeneratorPatchConfig"
       responses:
         "200":
           description: "OK"
@@ -443,11 +525,73 @@ paths:
       responses:
         "200":
           description: "OK"
+  /generators/{id}/share:
+    parameters:
+      - $ref: "#/components/parameters/generatorIdPath"
+    get:
+      summary: "List shared users"
+      description: "List all users that the generator is shared with."
+      operationId: "listGeneratorShares"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceShares"
+    post:
+      summary: "Share generator"
+      description: "Share the provided generator with the provided user."
+      operationId: "shareGenerator"
+      tags: [ "Shares" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareConfig"
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke generator share"
+      description: "Revoke a generator share with the provided user."
+      operationId: "deleteGeneratorShare"
+      tags: [ "Shares" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareDeleteConfig"
+      responses:
+        "200":
+          description: "OK"
+  /generators/{id}/share/public:
+    parameters:
+      - $ref: "#/components/parameters/generatorIdPath"
+    put:
+      summary: "Share generator publicly"
+      description: "Share the provided generator publicly."
+      operationId: "createGeneratorPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke generator public share"
+      description: "Revoke a generator public share."
+      operationId: "deleteGeneratorPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
   /generators/{id}/config:
     parameters:
       - $ref: "#/components/parameters/generatorIdPath"
     get:
-      summary: "Retrieve writeable generator properties as JSON"
+      summary: "Retrieve configurable Generator properties as JSON"
       operationId: "getGeneratorConfig"
       tags: [ "Generators" ]
       responses:
@@ -456,7 +600,7 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/GeneratorConfig"
   /generators/{id}/clone:
     parameters:
       - $ref: "#/components/parameters/generatorIdPath"
@@ -472,7 +616,10 @@ paths:
       operationId: "cloneGenerator"
       tags: [ "Generators" ]
       requestBody:
-        $ref: "#/components/requestBodies/CloneGeneratorRequest"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeneratorCloneConfig"
       responses:
         "200":
           description: "OK"
@@ -511,13 +658,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-              required:
-                - file
+              $ref: "#/components/schemas/GeneratorImportFromFileConfig"
       responses:
         "200":
           description: "OK"
@@ -530,10 +671,14 @@ paths:
       - $ref: "#/components/parameters/generatorIdPath"
     post:
       summary: "Add table to generator"
-      operationId: "createSourceTable"
+      operationId: "addSourceTable"
       tags: [ "Source Tables" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateSourceTableRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceTableAddConfig"
       responses:
         "200":
           description: "OK"
@@ -598,7 +743,11 @@ paths:
       operationId: "patchSourceTable"
       tags: [ "Source Tables" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchSourceTableRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceTablePatchConfig"
       responses:
         "200":
           description: "OK"
@@ -667,7 +816,11 @@ paths:
       operationId: "patchSourceColumn"
       tags: [ "Source Columns" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchSourceColumnRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceColumnPatchConfig"
       responses:
         "200":
           description: "OK"
@@ -684,7 +837,11 @@ paths:
       operationId: createSourceForeignKey
       tags: [ "Source Foreign Keys" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateSourceForeignKeyRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceForeignKeyConfig"
       responses:
         200:
           description: OK
@@ -703,7 +860,11 @@ paths:
       operationId: patchSourceForeignKey
       tags: [ "Source Foreign Keys" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchSourceForeignKeyRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceForeignKeyPatchConfig"
       responses:
         200:
           description: OK
@@ -780,6 +941,8 @@ paths:
               schema:
                 type: "string"
                 format: "binary"
+
+  # SYNTHETIC DATASETS
   /synthetic-datasets:
     get:
       summary: "List synthetic datasets"
@@ -808,7 +971,11 @@ paths:
       operationId: "createSyntheticDataset"
       tags: [ "Synthetic Datasets" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateSyntheticDatasetRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyntheticDatasetConfig"
       responses:
         "200":
           description: "OK"
@@ -835,7 +1002,11 @@ paths:
       operationId: "patchSyntheticDataset"
       tags: [ "Synthetic Datasets" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchSyntheticDatasetRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyntheticDatasetPatchConfig"
       responses:
         "200":
           description: "OK"
@@ -869,11 +1040,73 @@ paths:
       responses:
         "200":
           description: "OK"
+  /synthetic-datasets/{id}/share:
+    parameters:
+      - $ref: "#/components/parameters/syntheticDatasetIdPath"
+    get:
+      summary: "List shared users"
+      description: "List all users that the synthetic dataset is shared with."
+      operationId: "listSyntheticDatasetShares"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceShares"
+    post:
+      summary: "Share synthetic dataset"
+      description: "Share the provided synthetic dataset with the provided user."
+      operationId: "shareSyntheticDataset"
+      tags: [ "Shares" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareConfig"
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke synthetic dataset share"
+      description: "Revoke a synthetic dataset share with the provided user."
+      operationId: "deleteSyntheticDatasetShare"
+      tags: [ "Shares" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareDeleteConfig"
+      responses:
+        "200":
+          description: "OK"
+  /synthetic-datasets/{id}/share/public:
+    parameters:
+      - $ref: "#/components/parameters/syntheticDatasetIdPath"
+    put:
+      summary: "Share synthetic dataset publicly"
+      description: "Share the provided synthetic dataset publicly."
+      operationId: "createSyntheticDatasetPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "Revoke synthetic dataset public share"
+      description: "Revoke a synthetic dataset public share."
+      operationId: "deleteSyntheticDatasetPublicShare"
+      tags: [ "Shares" ]
+      responses:
+        "200":
+          description: "OK"
   /synthetic-datasets/{id}/config:
     parameters:
       - $ref: "#/components/parameters/syntheticDatasetIdPath"
     get:
-      summary: "Retrieve writeable synthetic dataset properties as JSON"
+      summary: "Retrieve configurable Synthetic Dataset properties as JSON"
       operationId: "getSyntheticDatasetConfig"
       tags: [ "Synthetic Datasets" ]
       responses:
@@ -882,7 +1115,7 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/SyntheticDatasetConfig"
   /synthetic-datasets/{id}/tables/{tableId}:
     parameters:
       - $ref: "#/components/parameters/syntheticDatasetIdPath"
@@ -903,7 +1136,11 @@ paths:
       operationId: "patchSyntheticTable"
       tags: [ "Synthetic Tables" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchSyntheticTableRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyntheticTablePatchConfig"
       responses:
         "200":
           description: "OK"
@@ -1048,7 +1285,11 @@ paths:
       operationId: "createSyntheticProbe"
       tags: [ "Synthetic Probes" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateSyntheticProbeRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyntheticProbeConfig"
       responses:
         "200":
           description: "OK"
@@ -1059,6 +1300,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Probe"
 
+  ## ASSISTANT
   /assistant/settings:
     get:
       summary: "Retrieve assistant settings. Only accessible for SuperAdmins."
@@ -1116,7 +1358,11 @@ paths:
       operationId: "createAssistantThread"
       tags: [ "Assistant" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateAssistantThreadRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantThreadConfig"
       responses:
         "200":
           description: "OK"
@@ -1144,7 +1390,11 @@ paths:
       operationId: "patchAssistantThread"
       tags: [ "Assistant" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchAssistantThreadRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantThreadPatchConfig"
       responses:
         "200":
           description: "OK"
@@ -1200,7 +1450,11 @@ paths:
       x-codegen-ignore: true
       tags: [ "Assistant" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateAssistantMessageRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantMessageConfig"
       responses:
         "200":
           description: |
@@ -1297,14 +1551,13 @@ paths:
       responses:
         "200":
           description: "OK"
-
-  /shares/{resourceType}/{resourceId}:
+  /assistant/threads/{id}/share:
     parameters:
-      - $ref: "#/components/parameters/resourceIdPath"
-      - $ref: "#/components/parameters/resourceTypePath"
+      - $ref: "#/components/parameters/assistantThreadIdPath"
     get:
-      summary: "Retrieve shares for a resource"
-      operationId: "getShare"
+      summary: "List shared users"
+      description: "List all users that the assistant thread is shared with."
+      operationId: "listAssistantThreadShares"
       tags: [ "Shares" ]
       responses:
         "200":
@@ -1312,51 +1565,56 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
-                properties:
-                  isPublic:
-                    type: "boolean"
-                  shares:
-                    type: "array"
-                    items:
-                      $ref: "#/components/schemas/Share"
+                $ref: "#/components/schemas/ResourceShares"
     post:
-      summary: "Share a resource with a user"
-      operationId: "createShare"
+      summary: "Share assistant thread"
+      description: "Share the provided assistant thread with the provided user."
+      operationId: "shareAssistantThread"
       tags: [ "Shares" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateShareRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareConfig"
       responses:
         "200":
           description: "OK"
     delete:
-      summary: "Revoke a share of a resource with a user"
-      operationId: "deleteShare"
+      summary: "Revoke assistant thread share"
+      description: "Revoke an assistant thread share with the provided user."
+      operationId: "deleteAssistantThreadShare"
       tags: [ "Shares" ]
       requestBody:
-        $ref: "#/components/requestBodies/DeleteShareRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareDeleteConfig"
       responses:
         "200":
           description: "OK"
-  /shares/{resourceType}/{resourceId}/public:
+  /assistant/threads/{id}/share/public:
     parameters:
-      - $ref: "#/components/parameters/resourceIdPath"
-      - $ref: "#/components/parameters/resourceTypePath"
+      - $ref: "#/components/parameters/assistantThreadIdPath"
     put:
-      summary: "Share a resource publicly"
-      operationId: "createPublicShare"
+      summary: "Share assistant thread publicly"
+      description: "Share the provided assistant thread publicly."
+      operationId: "createAssistantThreadPublicShare"
       tags: [ "Shares" ]
       responses:
         "200":
           description: "OK"
     delete:
-      summary: "Revoke a public share of a resource"
-      operationId: "deletePublicShare"
+      summary: "Revoke assistant thread public share"
+      description: "Revoke an assistant thread public share."
+      operationId: "deleteAssistantThreadPublicShare"
       tags: [ "Shares" ]
       responses:
         "200":
           description: "OK"
 
+  # USERS
   /users/me/key:
     put:
       summary: "Generate API key for current user"
@@ -1398,7 +1656,11 @@ paths:
       operationId: "updateUserSettings"
       tags: [ "Users" ]
       requestBody:
-        $ref: "#/components/requestBodies/UpdateUserSettings"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserSettingsUpdateConfig"
       responses:
         "204":
           description: "OK"
@@ -1419,6 +1681,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Notification"
 
+  ## COMPUTES
   /computes:
     get:
       summary: "List the available computes"
@@ -1455,7 +1718,11 @@ paths:
           ```
       tags: [ "Computes" ]
       requestBody:
-        $ref: "#/components/requestBodies/CreateComputeRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComputeConfig"
       responses:
         "200":
           description: "OK"
@@ -1487,7 +1754,11 @@ paths:
         For the structure of the config and secrets, see the CREATE method.
       tags: [ "Computes" ]
       requestBody:
-        $ref: "#/components/requestBodies/PatchComputeRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComputePatchConfig"
       responses:
         "200":
           description: "OK"
@@ -1504,6 +1775,7 @@ paths:
         "200":
           description: "OK"
 
+  ## SYSTEM
   /about:
     get:
       summary: "Retrieve general info about service"
@@ -1523,7 +1795,6 @@ paths:
                   assistant:
                     type: boolean
                     description: Is the assistant service available
-
   /usage-report/periods:
     get:
       summary: "Retrieve usage report by Periods"
@@ -1553,6 +1824,7 @@ paths:
                 type: "string"
                 format: "binary"
 
+  ## MODELS
   /models/{modelType}:
     parameters:
       - $ref: "#/components/parameters/modelTypePath"
@@ -1650,6 +1922,7 @@ components:
       name: "X-MOSTLY-API-KEY"
 
   responses:
+
     BadRequest:
       description: "Bad Request"
       content:
@@ -1661,397 +1934,8 @@ components:
                 type: "string"
                 description: "A human-readable error message"
 
-  requestBodies:
-    CreateShareRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              userEmail:
-                $ref: "#/components/schemas/UserEmail"
-              permissionLevel:
-                $ref: "#/components/schemas/PermissionLevel"
-            required: [ "userEmail", "permissionLevel" ]
-    DeleteShareRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              userEmail:
-                $ref: "#/components/schemas/UserEmail"
-            required: [ "userEmail" ]
-
-    CreateConnectorRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/ConnectorName"
-              type:
-                $ref: "#/components/schemas/ConnectorType"
-              accessType:
-                $ref: "#/components/schemas/ConnectorAccessType"
-              config:
-                $ref: "#/components/schemas/ConnectorConfig"
-              secrets:
-                $ref: "#/components/schemas/ConnectorSecrets"
-              ssl:
-                $ref: "#/components/schemas/ConnectorSsl"
-              testConnection:
-                $ref: "#/components/schemas/ConnectorTestConnection"
-            required:
-              - "type"
-    PatchConnectorRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/ConnectorName"
-              config:
-                $ref: "#/components/schemas/ConnectorConfig"
-              secrets:
-                $ref: "#/components/schemas/ConnectorSecrets"
-              ssl:
-                $ref: "#/components/schemas/ConnectorSsl"
-              testConnection:
-                $ref: "#/components/schemas/ConnectorTestConnection"
-    CreateGeneratorRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/GeneratorName"
-              description:
-                $ref: "#/components/schemas/GeneratorDescription"
-              tables:
-                type: "array"
-                items:
-                  type: "object"
-                  properties:
-                    name:
-                      $ref: "#/components/schemas/SourceTableName"
-                    sourceConnectorId:
-                      $ref: "#/components/schemas/ConnectorId"
-                    location:
-                      $ref: "#/components/schemas/SourceTableLocation"
-                    data:
-                      $ref: "#/components/schemas/SourceTableData"
-                    modelConfiguration:
-                      $ref: "#/components/schemas/ModelConfiguration"
-                    languageModelConfiguration:
-                      $ref: "#/components/schemas/ModelConfiguration"
-                    primaryKey:
-                      $ref: "#/components/schemas/SourceTablePrimaryKey"
-                    foreignKeys:
-                      type: "array"
-                      description: The foreign keys of this table.
-                      items:
-                        properties:
-                          column:
-                            $ref: "#/components/schemas/ForeignKeyColumn"
-                          referencedTable:
-                            $ref: "#/components/schemas/ForeignKeyReferencedTable"
-                          isContext:
-                            $ref: "#/components/schemas/ForeignKeyIsContext"
-                        required:
-                          - column
-                          - referencedTable
-                          - isContext
-                    columns:
-                      type: "array"
-                      description: The column configuration of this table.
-                      items:
-                        properties:
-                          name:
-                            $ref: "#/components/schemas/SourceColumnName"
-                          included:
-                            $ref: "#/components/schemas/SourceColumnIncluded"
-                          modelEncodingType:
-                            $ref: "#/components/schemas/ModelEncodingType"
-                        required:
-                          - "name"
-
-    CloneGeneratorRequest:
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              trainingStatus:
-                description: "The training status of the new generator."
-                enum:
-                  - "NEW"
-                  - "CONTINUE"
-                default: "NEW"
-
-    PatchGeneratorRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/GeneratorName"
-              description:
-                $ref: "#/components/schemas/GeneratorDescription"
-    PatchSourceColumnRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              included:
-                $ref: "#/components/schemas/SourceColumnIncluded"
-              modelEncodingType:
-                $ref: "#/components/schemas/ModelEncodingType"
-    CreateSourceTableRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              sourceConnectorId:
-                $ref: "#/components/schemas/ConnectorId"
-              location:
-                $ref: "#/components/schemas/SourceTableLocation"
-              name:
-                $ref: "#/components/schemas/SourceTableName"
-              includeChildren:
-                $ref: "#/components/schemas/SourceTableIncludeChildren"
-              modelConfiguration:
-                $ref: "#/components/schemas/ModelConfiguration"
-              languageModelConfiguration:
-                $ref: "#/components/schemas/ModelConfiguration"
-            required:
-              - "sourceConnectorId"
-              - "location"
-    PatchSourceTableRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/SourceTableName"
-              primaryKey:
-                $ref: "#/components/schemas/SourceTablePrimaryKey"
-              modelConfiguration:
-                $ref: "#/components/schemas/ModelConfiguration"
-              languageModelConfiguration:
-                $ref: "#/components/schemas/ModelConfiguration"
-    CreateSourceForeignKeyRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              column:
-                $ref: "#/components/schemas/ForeignKeyColumn"
-              referencedTable:
-                $ref: "#/components/schemas/ForeignKeyReferencedTable"
-              isContext:
-                $ref: "#/components/schemas/ForeignKeyIsContext"
-            required:
-              - column
-              - referencedTable
-    PatchSourceForeignKeyRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              isContext:
-                $ref: "#/components/schemas/ForeignKeyIsContext"
-    CreateSyntheticProbeRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              generatorId:
-                type: "string"
-                format: "uuid"
-                description: Id of generator to create synthetic probe from.
-              tables:
-                type: "array"
-                items:
-                  type: "object"
-                  properties:
-                    name:
-                      $ref: "#/components/schemas/SyntheticTableName"
-                    configuration:
-                      $ref: "#/components/schemas/SyntheticTableConfiguration"
-    CreateSyntheticDatasetRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              generatorId:
-                type: "string"
-                format: "uuid"
-                description: Id of generator to create synthetic dataset from.
-              name:
-                $ref: "#/components/schemas/SyntheticDatasetName"
-              description:
-                $ref: "#/components/schemas/SyntheticDatasetDescription"
-              tables:
-                type: "array"
-                items:
-                  type: "object"
-                  properties:
-                    name:
-                      $ref: "#/components/schemas/SyntheticTableName"
-                    configuration:
-                      $ref: "#/components/schemas/SyntheticTableConfiguration"
-              delivery:
-                $ref: "#/components/schemas/SyntheticDatasetDelivery"
-    PatchSyntheticDatasetRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/SyntheticDatasetName"
-              description:
-                $ref: "#/components/schemas/SyntheticDatasetDescription"
-              delivery:
-                $ref: "#/components/schemas/SyntheticDatasetDelivery"
-    PatchSyntheticTableRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              configuration:
-                $ref: "#/components/schemas/SyntheticTableConfiguration"
-
-    UpdateUserSettings:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              profile:
-                type: "object"
-                properties:
-                  firstName:
-                    type: "string"
-                    description: "First name of the user"
-                    maxLength: 30
-                  lastName:
-                    type: "string"
-                    description: "Last name of the user"
-                    maxLength: 30
-              assistant:
-                type: "object"
-                properties:
-                  aboutUserMessage:
-                    description: The instruction what the Assistant should know about the user to provide better response
-                    type: string
-                  aboutModelMessage:
-                    description: The instruction how the Assistant should respond
-                    type: string
-    CreateAssistantThreadRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/AssistantThreadName"
-    PatchAssistantThreadRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/AssistantThreadName"
-    CreateAssistantMessageRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            description: "Submit a new message"
-            properties:
-              stream:
-                type: "boolean"
-                default: true
-                nullable: true
-                description: "Whether to stream back partial progress. If set, message deltas will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format) as they become available, with the stream terminated by a data: [DONE] message."
-              content:
-                $ref: "#/components/schemas/AssistantMessageContent"
-              contentType:
-                $ref: "#/components/schemas/AssistantMessageContentType"
-
-    CreateComputeRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/ComputeName"
-              type:
-                $ref: "#/components/schemas/ComputeType"
-              resources:
-                $ref: "#/components/schemas/ComputeResources"
-              config:
-                $ref: "#/components/schemas/ComputeConfig"
-              secrets:
-                $ref: "#/components/schemas/ComputeSecrets"
-              orderIndex:
-                $ref: "#/components/schemas/ComputeOrderIndex"
-    PatchComputeRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: "object"
-            properties:
-              name:
-                $ref: "#/components/schemas/ComputeName"
-              type:
-                $ref: "#/components/schemas/ComputeType"
-              resources:
-                $ref: "#/components/schemas/ComputeResources"
-              config:
-                $ref: "#/components/schemas/ComputeConfig"
-              secrets:
-                $ref: "#/components/schemas/ComputeSecrets"
-              orderIndex:
-                $ref: "#/components/schemas/ComputeOrderIndex"
   parameters:
+
     pageOffset:
       name: "offset"
       description: "Offset the entities in the response"
@@ -2238,6 +2122,8 @@ components:
       type: "string"
       description: "The API service endpoint of the entity"
       example: "/generators/94c77249-42bf-443a-8e17-6e18a19d60b8"
+
+    # SHARES
     Share:
       type: "object"
       allOf:
@@ -2245,6 +2131,34 @@ components:
       properties:
         permissionLevel:
           $ref: "#/components/schemas/PermissionLevel"
+    ResourceShares:
+      type: "object"
+      properties:
+        isPublic:
+          type: "boolean"
+        shares:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Share"
+    ShareConfig:
+      type: "object"
+      properties:
+        userEmail:
+          $ref: "#/components/schemas/UserEmail"
+        permissionLevel:
+          $ref: "#/components/schemas/PermissionLevel"
+      required:
+        - "userEmail"
+        - "permissionLevel"
+    ShareDeleteConfig:
+      type: "object"
+      properties:
+        userEmail:
+          $ref: "#/components/schemas/UserEmail"
+      required:
+        - "userEmail"
+
+    # USERS
     User:
       type: "object"
       properties:
@@ -2263,9 +2177,11 @@ components:
     UserFirstName:
       type: "string"
       description: "First name of a user"
+      maxLength: 30
     UserLastName:
       type: "string"
       description: "Last name of a user"
+      maxLength: 30
     UserEmail:
       type: "string"
       description: "The email of a user"
@@ -2308,6 +2224,29 @@ components:
       type: "object"
       description: "Additional optional user settings"
       additionalProperties: { }
+    UserSettingsUpdateConfig:
+      type: "object"
+      properties:
+        profile:
+          $ref: "#/components/schemas/UserSettingsProfileUpdateConfig"
+        assistant:
+          $ref: "#/components/schemas/UserSettingsAssistantUpdateConfig"
+    UserSettingsProfileUpdateConfig:
+      type: "object"
+      properties:
+        firstName:
+          $ref: "#/components/schemas/UserFirstName"
+        lastName:
+          $ref: "#/components/schemas/UserLastName"
+    UserSettingsAssistantUpdateConfig:
+      type: "object"
+      properties:
+        aboutUserMessage:
+          description: "The instruction what the Assistant should know about the user to provide better response"
+          type: "string"
+        aboutModelMessage:
+          description: "The instruction how the Assistant should respond"
+          type: "string"
     UserUsage:
       type: "object"
       properties:
@@ -2317,11 +2256,11 @@ components:
             current:
               description: "The credit balance for the current time period"
               type: "number"
-              format: "float"
+              format: "double"
             limit:
               description: "The credit limit for the current time period. If empty, then there is no limit."
               type: "number"
-              format: "float"
+              format: "double"
             periodStart:
               description: "The UTC date and time when the current time period started"
               type: "string"
@@ -2421,21 +2360,20 @@ components:
       type: "string"
       description: |
         The encoding type used for model training and data generation.
-        - AUTO: Model chooses among available encoding types based on the column's data type.
-        - TABULAR_CATEGORICAL: Model samples from existing (non-rare) categories.
-        - TABULAR_NUMERIC_AUTO: Model chooses among 3 numeric encoding types based on the values.
-        - TABULAR_NUMERIC_DISCRETE: Model samples from existing discrete numerical values.
-        - TABULAR_NUMERIC_BINNED: Model samples from binned buckets, to then sample randomly within a bucket.
-        - TABULAR_NUMERIC_DIGIT: Model samples each digit of a numerical value.
-        - TABULAR_CHARACTER: Model samples each character of a string value.
-        - TABULAR_DATETIME: Model samples each part of a datetime value.
-        - TABULAR_DATETIME_RELATIVE: Model samples the relative difference between datetimes within a sequence.
-        - TABULAR_LAT_LONG: Model samples a latitude-longitude column. The format is "latitude,longitude".
-        - LANGUAGE_TEXT: Model will train a distinct LANGUAGE model for this column, to then generate free text.
-        # - LANGUAGE_NUMERIC
-        # - LANGUAGE_CATEGORICAL 
-        # - LANGUAGE_DATETIME
-        Encoding types, that are not being prefixed with either TABULAR or LANGUAGE have been deprecated.
+        
+        - `AUTO`: Model chooses among available encoding types based on the column's data type.
+        - `TABULAR_CATEGORICAL`: Model samples from existing (non-rare) categories.
+        - `TABULAR_NUMERIC_AUTO`: Model chooses among 3 numeric encoding types based on the values.
+        - `TABULAR_NUMERIC_DISCRETE`: Model samples from existing discrete numerical values.
+        - `TABULAR_NUMERIC_BINNED`: Model samples from binned buckets, to then sample randomly within a bucket.
+        - `TABULAR_NUMERIC_DIGIT`: Model samples each digit of a numerical value.
+        - `TABULAR_CHARACTER`: Model samples each character of a string value.
+        - `TABULAR_DATETIME`: Model samples each part of a datetime value.
+        - `TABULAR_DATETIME_RELATIVE`: Model samples the relative difference between datetimes within a sequence.
+        - `TABULAR_LAT_LONG`: Model samples a latitude-longitude column. The format is "latitude,longitude".
+        - `LANGUAGE_TEXT`: Model will train a distinct LANGUAGE model for this column, to then generate free text.
+
+        Encoding types, that are not being prefixed with either `TABULAR` or `LANGUAGE` have been deprecated.
       enum:
         - "AUTO"
         - "TABULAR_CATEGORICAL"
@@ -2458,7 +2396,8 @@ components:
         - "DATETIME_RELATIVE"  # deprecated, use "TABULAR_DATETIME_RELATIVE"
         - "LAT_LONG"           # deprecated, use "TABULAR_LAT_LONG"
       default: "AUTO"
-    # Connector components
+
+    # CONNECTOR
     ConnectorId:
       type: "string"
       format: "uuid"
@@ -2488,22 +2427,22 @@ components:
         - "S3_STORAGE"
         - "FILE_UPLOAD"
         - "HIVE"
-    ConnectorConfig:
+    ConnectorConfigParams:
       description: |
-        The config parameter contains any configuration of the connector.
+        The config parameters contain any configuration of the connector.
         The structure of the config object depends on the type of the connector.
       type: "object"
       additionalProperties: { }
-    ConnectorSecrets:
+    ConnectorSecretsParams:
       description: |
-        The secrets parameter contains any sensitive credentials of the connector.
+        The secrets parameters contain any sensitive credentials of the connector.
         The structure of the secrets object depends on the type of the connector.
       type: "object"
       additionalProperties:
         type: "string"
-    ConnectorSsl:
+    ConnectorSslParams:
       description: |
-        The ssl parameter contains any SSL related configurations of the connector.
+        The ssl parameters contain any SSL related configurations of the connector.
         The structure of the ssl object depends on the type of the connector.
       type: "object"
       additionalProperties:
@@ -2556,11 +2495,11 @@ components:
         accessType:
           $ref: "#/components/schemas/ConnectorAccessType"
         config:
-          $ref: "#/components/schemas/ConnectorConfig"
+          $ref: "#/components/schemas/ConnectorConfigParams"
         secrets:
-          $ref: "#/components/schemas/ConnectorSecrets"
+          $ref: "#/components/schemas/ConnectorSecretsParams"
         ssl:
-          $ref: "#/components/schemas/ConnectorSsl"
+          $ref: "#/components/schemas/ConnectorSslParams"
         metadata:
           $ref: "#/components/schemas/Metadata"
         usage:
@@ -2577,8 +2516,40 @@ components:
         - "name"
         - "type"
         - "accessType"
+    ConnectorConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/ConnectorName"
+        type:
+          $ref: "#/components/schemas/ConnectorType"
+        accessType:
+          $ref: "#/components/schemas/ConnectorAccessType"
+        config:
+          $ref: "#/components/schemas/ConnectorConfigParams"
+        secrets:
+          $ref: "#/components/schemas/ConnectorSecretsParams"
+        ssl:
+          $ref: "#/components/schemas/ConnectorSslParams"
+        testConnection:
+          $ref: "#/components/schemas/ConnectorTestConnection"
+      required:
+        - "type"
+    ConnectorPatchConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/ConnectorName"
+        config:
+          $ref: "#/components/schemas/ConnectorConfigParams"
+        secrets:
+          $ref: "#/components/schemas/ConnectorSecretsParams"
+        ssl:
+          $ref: "#/components/schemas/ConnectorSslParams"
+        testConnection:
+          $ref: "#/components/schemas/ConnectorTestConnection"
 
-    # Generator components
+    # GENERATOR
     GeneratorId:
       type: "string"
       format: "uuid"
@@ -2591,7 +2562,7 @@ components:
       description: "The description of a generator"
     GeneratorAccuracy:
       type: "number"
-      format: "float"
+      format: "double"
       description: |
         The overall accuracy of the trained generator.
         This is the average of the overall accuracy scores of all trained models.
@@ -2669,8 +2640,7 @@ components:
         - "id"
         - "trainingStatus"
         - "metadata"
-
-    # Source Table components
+    # Source Table
     SourceTableId:
       type: "string"
       format: "uuid"
@@ -2739,8 +2709,7 @@ components:
         - "name"
         - "columns"
         - "model"
-
-    # Source Column components
+    # Source Column
     SourceColumnId:
       type: "string"
       readOnly: true
@@ -2809,8 +2778,7 @@ components:
         - "name"
         - "included"
         - "modelEncodingType"
-
-    # Source ForeignKey components
+    # Source ForeignKey
     SourceForeignKeyId:
       type: string
       readOnly: true
@@ -2828,7 +2796,7 @@ components:
         If true, then the foreign key will be considered as a context relation.
         Note, that only one foreign key relation per table can be a context relation.
     SourceForeignKey:
-      type: object
+      type: "object"
       properties:
         id:
           $ref: "#/components/schemas/SourceForeignKeyId"
@@ -2839,12 +2807,149 @@ components:
         isContext:
           $ref: "#/components/schemas/ForeignKeyIsContext"
       required:
-        - id
-        - foreignKey
-        - referencedTable
-        - isContext
+        - "id"
+        - "foreignKey"
+        - "referencedTable"
+        - "isContext"
+    # Generator Configs
+    GeneratorConfig:
+      type: "object"
+      description: "The configuration for creating a new generator."
+      properties:
+        name:
+          $ref: "#/components/schemas/GeneratorName"
+        description:
+          $ref: "#/components/schemas/GeneratorDescription"
+        tables:
+          type: "array"
+          description: "The tables of a generator"
+          items:
+            $ref: "#/components/schemas/SourceTableConfig"
+    GeneratorCloneConfig:
+      type: "object"
+      description: "The configuration for cloning a generator."
+      properties:
+        trainingStatus:
+          $ref: "#/components/schemas/GeneratorCloneTrainingStatus"
+    GeneratorCloneTrainingStatus:
+      description: | 
+        The training status of the new generator. The available options are:
+          
+        - `NEW`: The new generator will re-use existing data and model configurations.
+        - `CONTINUE`: The new generator will re-use existing data and model configurations, as well as model weights.
+      enum:
+        - "NEW"
+        - "CONTINUE"
+      default: "NEW"
+    GeneratorPatchConfig:
+      type: "object"
+      description: "The configuration for updating a generator."
+      properties:
+        name:
+          $ref: "#/components/schemas/GeneratorName"
+        description:
+          $ref: "#/components/schemas/GeneratorDescription"
+    GeneratorImportFromFileConfig:
+      type: "object"
+      properties:
+        file:
+          type: "string"
+          format: "binary"
+      required:
+        - "file"
+    SourceTableConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/SourceTableName"
+        sourceConnectorId:
+          $ref: "#/components/schemas/ConnectorId"
+        location:
+          $ref: "#/components/schemas/SourceTableLocation"
+        data:
+          $ref: "#/components/schemas/SourceTableData"
+        modelConfiguration:
+          $ref: "#/components/schemas/ModelConfiguration"
+        languageModelConfiguration:
+          $ref: "#/components/schemas/ModelConfiguration"
+        primaryKey:
+          $ref: "#/components/schemas/SourceTablePrimaryKey"
+        foreignKeys:
+          type: "array"
+          description: "The foreign key configurations of this table."
+          items:
+            $ref: "#/components/schemas/SourceForeignKeyConfig"
+        columns:
+          type: "array"
+          description: "The column configurations of this table."
+          items:
+            $ref: "#/components/schemas/SourceColumnConfig"
+    SourceTablePatchConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/SourceTableName"
+        primaryKey:
+          $ref: "#/components/schemas/SourceTablePrimaryKey"
+        modelConfiguration:
+          $ref: "#/components/schemas/ModelConfiguration"
+        languageModelConfiguration:
+          $ref: "#/components/schemas/ModelConfiguration"
+    SourceForeignKeyConfig:
+      type: "object"
+      properties:
+        column:
+          $ref: "#/components/schemas/ForeignKeyColumn"
+        referencedTable:
+          $ref: "#/components/schemas/ForeignKeyReferencedTable"
+        isContext:
+          $ref: "#/components/schemas/ForeignKeyIsContext"
+      required:
+        - "column"
+        - "referencedTable"
+    SourceForeignKeyPatchConfig:
+      type: "object"
+      properties:
+        isContext:
+          $ref: "#/components/schemas/ForeignKeyIsContext"
+    SourceColumnConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/SourceColumnName"
+        included:
+          $ref: "#/components/schemas/SourceColumnIncluded"
+        modelEncodingType:
+          $ref: "#/components/schemas/ModelEncodingType"
+      required:
+        - "name"
+    SourceColumnPatchConfig:
+      type: "object"
+      properties:
+        included:
+          $ref: "#/components/schemas/SourceColumnIncluded"
+        modelEncodingType:
+          $ref: "#/components/schemas/ModelEncodingType"
+    SourceTableAddConfig:
+      type: "object"
+      properties:
+        sourceConnectorId:
+          $ref: "#/components/schemas/ConnectorId"
+        location:
+          $ref: "#/components/schemas/SourceTableLocation"
+        name:
+          $ref: "#/components/schemas/SourceTableName"
+        includeChildren:
+          $ref: "#/components/schemas/SourceTableIncludeChildren"
+        modelConfiguration:
+          $ref: "#/components/schemas/ModelConfiguration"
+        languageModelConfiguration:
+          $ref: "#/components/schemas/ModelConfiguration"
+      required:
+        - "sourceConnectorId"
+        - "location"
 
-    # Model components
+    # MODEL
     ModelId:
       type: "string"
       description:
@@ -2862,7 +2967,7 @@ components:
         - "LANGUAGE"
     ModelConfiguration:
       type: "object"
-      description: "The training configuration for a AI model"
+      description: "The training configuration for the AI model"
       properties:
         model:
           $ref: "#/components/schemas/ModelId"
@@ -2933,7 +3038,7 @@ components:
       properties:
         maxEpsilon:
           type: "number"
-          format: "float"
+          format: "double"
           description: |
             Specifies the maximum allowable epsilon value. If the training process exceeds this threshold, it will be terminated early. Only model checkpoints with epsilon values below this limit will be retained. 
             If not provided, the training will proceed without early termination based on epsilon constraints.
@@ -2941,7 +3046,7 @@ components:
           maximum: 10000.0
         noiseMultiplier:
           type: "number"
-          format: "float"
+          format: "double"
           description: |
             The ratio of the standard deviation of the Gaussian noise to the L2-sensitivity of the function to which the noise is added (How much noise to add).
           default: 1.5
@@ -2949,7 +3054,7 @@ components:
           maximum: 10000.0
         maxGradNorm:
           type: "number"
-          format: "float"
+          format: "double"
           description: |
             The maximum norm of the per-sample gradients for training the model with differential privacy.
           default: 1.0
@@ -2967,21 +3072,21 @@ components:
                 This is the average of univariate, bivariate and coherence accuracies.
                 Accuracy is defined as (100% - Total Variation Distance) for each distribution, and then averaged across.
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
             univariate:
               description: |
                 The average accuracy of the discretized univariate distributions.
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
             bivariate:
               description: |
                 The average accuracy of the discretized bivariate distributions.
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
             coherence:
@@ -2989,7 +3094,7 @@ components:
                 The average accuracy of the discretized coherence distributions.
                 Only applicable for sequential models.
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
             overallMax:
@@ -2997,7 +3102,7 @@ components:
                 The expected accuracy of a holdout dataset of same size as synthetic dataset.
                 This serves as a reference for the overall accuracy of the trained generator.
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
         distances:
@@ -3006,23 +3111,23 @@ components:
             dcrTraining:
               description: "The average distance to closest record (L2) between synthetic and training samples within the embedding space."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
             dcrHoldout:
               description: "The average distance to closest record (L2) between synthetic and holdout samples within the embedding space."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
             dcrOriginal:
               description: "(DEPRECATED) The average DCR between the original records."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               deprecated: true
             dcrSynthetic:
               description: "(DEPRECATED) The average DCR between the synthetic and the original records."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               deprecated: true
         similarity:
@@ -3031,29 +3136,29 @@ components:
             cosineSimilarityTrainingSynthetic:
               description: "The cosine similarity between the training samples centroid and the synthetic samples centroid within the embedding space."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: -1.0
               maximum: 1.0
             cosineSimilarityTrainingHoldout:
               description: "The cosine similarity between the training samples centroid and the holdout samples centroid within the embedding space."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: -1.0
               maximum: 1.0
             discriminatorAUCTrainingSynthetic:
               description: "The cross-validated average AUC of discriminating between training embeddings ans synthetic embeddings."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
             discriminatorAUCTrainingHoldout:
               description: "The cross-validated average AUC of discriminating between training embeddings ans holdout embeddings."
               type: "number"
-              format: "float"
+              format: "double"
               minimum: 0.0
               maximum: 1.0
 
-    # JobProgress components
+    # JOB_PROGRESS
     JobProgress:
       type: "object"
       properties:
@@ -3169,7 +3274,7 @@ components:
         - "FAILED"
         - "CANCELED"
 
-    # Synthetic Dataset components
+    # SYNTHETIC DATASET
     SyntheticDatasetId:
       type: "string"
       format: "uuid"
@@ -3193,7 +3298,7 @@ components:
           description: "The number of datapoints in the synthetic dataset"
         totalCredits:
           type: "number"
-          format: "float"
+          format: "double"
           description: "The number of credits used for the synthetic dataset"
         totalComputeTime:
           type: "integer"
@@ -3261,7 +3366,6 @@ components:
         - "name"
         - "generationStatus"
         - "metadata"
-
     SyntheticDatasetFormat:
       type: "string"
       enum:
@@ -3269,15 +3373,13 @@ components:
         - "PARQUET"
         - "XLSX"
       default: "CSV"
-
     SyntheticDatasetReportType:
       type: "string"
       enum:
         - "MODEL"
         - "DATA"
       default: "DATA"
-
-    # Synthetic Table components
+    # Synthetic Table
     SyntheticTableSampleSize:
       type: "integer"
       description: |
@@ -3289,15 +3391,15 @@ components:
     SyntheticTableSamplingTemperature:
       description: "temperature for sampling"
       type: "number"
-      format: "float"
+      format: "double"
       minimum: 0.0
-      maximum: 10.0
+      maximum: 2.0
       default: 1.0
     SyntheticTableSamplingTopP:
       description: "topP for sampling"
       type: "number"
-      format: "float"
-      minimum: 0.0
+      format: "double"
+      minimum: 0.9
       maximum: 1.0
       default: 1.0
     SyntheticTableSampleSeedConnectorId:
@@ -3337,7 +3439,7 @@ components:
               female: 0.5
           additionalProperties:
             type: number
-            format: float
+            format: "double"
     SyntheticTableImputation:
       type: "array"
       description: |
@@ -3436,8 +3538,7 @@ components:
           $ref: "#/components/schemas/SyntheticTableTotalDatapoints"
         sourceTableTotalRows:
           $ref: "#/components/schemas/SourceTableTotalRows"
-
-    # Delivery components
+    # Delivery
     SyntheticDatasetDelivery:
       type: "object"
       properties:
@@ -3456,8 +3557,54 @@ components:
         - "destinationConnectorId"
         - "location"
         - "overwriteTables"
+    # Synthetic Dataset Configs
+    SyntheticDatasetConfig:
+      type: "object"
+      properties:
+        generatorId:
+          $ref: "#/components/schemas/GeneratorId"
+        name:
+          $ref: "#/components/schemas/SyntheticDatasetName"
+        description:
+          $ref: "#/components/schemas/SyntheticDatasetDescription"
+        tables:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/SyntheticTableConfig"
+        delivery:
+          $ref: "#/components/schemas/SyntheticDatasetDelivery"
+    SyntheticDatasetPatchConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/SyntheticDatasetName"
+        description:
+          $ref: "#/components/schemas/SyntheticDatasetDescription"
+        delivery:
+          $ref: "#/components/schemas/SyntheticDatasetDelivery"
+    SyntheticTablePatchConfig:
+      type: "object"
+      properties:
+        configuration:
+          $ref: "#/components/schemas/SyntheticTableConfiguration"
+    SyntheticProbeConfig:
+      type: "object"
+      properties:
+        generatorId:
+          $ref: "#/components/schemas/GeneratorId"
+        tables:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/SyntheticTableConfig"
+    SyntheticTableConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/SyntheticTableName"
+        configuration:
+          $ref: "#/components/schemas/SyntheticTableConfiguration"
 
-    # Assistant components
+    # ASSISTANT
     AssistantSettingsIsEnabled:
       type: "boolean"
       description: "If true, the assistant is enabled."
@@ -3659,6 +3806,32 @@ components:
           type: "number"
           format: "int64"
           description: "The total number of tokens consumed by the thread."
+    # Assistant Configs
+    AssistantThreadConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/AssistantThreadName"
+    AssistantThreadPatchConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/AssistantThreadName"
+    AssistantMessageConfig:
+      type: "object"
+      description: "Submit a new message"
+      properties:
+        stream:
+          type: "boolean"
+          default: true
+          nullable: true
+          description: "Whether to stream back partial progress. If set, message deltas will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format) as they become available, with the stream terminated by a data: [DONE] message."
+        content:
+          $ref: "#/components/schemas/AssistantMessageContent"
+        contentType:
+          $ref: "#/components/schemas/AssistantMessageContentType"
+
+    # COMPUTES
     ComputeId:
       type: "string"
       format: "uuid"
@@ -3680,7 +3853,7 @@ components:
           description: "The number of CPU cores"
         memory:
           type: "number"
-          format: "float"
+          format: "double"
           description: "The amount of memory in GB"
         gpus:
           type: "integer"
@@ -3688,13 +3861,13 @@ components:
           default: 0
         gpuMemory:
           type: "number"
-          format: "float"
+          format: "double"
           description: "The amount of GPU memory in GB"
           default: 0
-    ComputeConfig:
+    ComputeConfigParams:
       type: "object"
       additionalProperties: { }
-    ComputeSecrets:
+    ComputeSecretsParams:
       type: "object"
       additionalProperties: { }
     ComputeListItem:
@@ -3718,15 +3891,46 @@ components:
         type:
           $ref: "#/components/schemas/ComputeType"
         config:
-          $ref: "#/components/schemas/ComputeConfig"
+          $ref: "#/components/schemas/ComputeConfigParams"
         secrets:
-          $ref: "#/components/schemas/ComputeSecrets"
+          $ref: "#/components/schemas/ComputeSecretsParams"
         resources:
           $ref: "#/components/schemas/ComputeResources"
         orderIndex:
           $ref: "#/components/schemas/ComputeOrderIndex"
+    # Compute Configs
+    ComputeConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/ComputeName"
+        type:
+          $ref: "#/components/schemas/ComputeType"
+        resources:
+          $ref: "#/components/schemas/ComputeResources"
+        config:
+          $ref: "#/components/schemas/ComputeConfigParams"
+        secrets:
+          $ref: "#/components/schemas/ComputeSecretsParams"
+        orderIndex:
+          $ref: "#/components/schemas/ComputeOrderIndex"
+    ComputePatchConfig:
+      type: "object"
+      properties:
+        name:
+          $ref: "#/components/schemas/ComputeName"
+        type:
+          $ref: "#/components/schemas/ComputeType"
+        resources:
+          $ref: "#/components/schemas/ComputeResources"
+        config:
+          $ref: "#/components/schemas/ComputeConfigParams"
+        secrets:
+          $ref: "#/components/schemas/ComputeSecretsParams"
+        orderIndex:
+          $ref: "#/components/schemas/ComputeOrderIndex"
 
-    # Usage Report components
+    # SYSTEM
     UsageReportPeriod:
       type: "object"
       description: "The usage report for a specific month"
@@ -3749,7 +3953,7 @@ components:
           description: "The number of rows generated during the reported period"
         totalCredits:
           type: "number"
-          format: "float"
+          format: "double"
           description: "The number of credits used during the reported period"
 
 security:
