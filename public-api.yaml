@@ -3841,7 +3841,7 @@ components:
       type: "string"
       enum:
         - "KUBERNETES"
-        # - "DATABRICKS"
+        - "DATABRICKS"
     ComputeOrderIndex:
       type: "integer"
       description: "The index for determining the sort order when listing computes"
