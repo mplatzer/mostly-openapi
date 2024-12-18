@@ -82,127 +82,6 @@ paths:
         Create a connector, and optionally validate the connection before saving.
 
         If validation fails, a 400 status with an error message will be returned.
-
-        The structures of the config, secrets and ssl parameters depend on the connector type.
-
-        - Cloud storage:
-          ```yaml
-          - type: AZURE_STORAGE
-            config:
-              accountName: string
-              clientId: string (required for auth via service principal)
-              tenantId: string (required for auth via service principal)
-            secrets:
-              accountKey: string (required for regular auth)
-              clientSecret: string (required for auth via service principal)
-
-          - type: GOOGLE_CLOUD_STORAGE
-            config:
-            secrets:
-              keyFile: string
-
-          - type: S3_STORAGE
-            config:
-              accessKey: string
-              endpointUrl: string (only needed for S3-compatible storage services other than AWS)
-              sslEnabled: boolean, default: false
-            secrets:
-              secretKey: string
-            ssl:
-              caCertificate: base64-encoded string              
-          ```
-        - Database:
-          ```yaml
-          - type: BIGQUERY
-            config:
-            secrets:
-              keyFile: string
-
-          - type: DATABRICKS
-            config:
-              host: string
-              httpPath: string
-              catalog: string
-              clientId: string (required for auth via service principal)
-              tenantId: string (required for auth via service principal)
-            secrets:
-              accessToken: string (required for regular auth)
-              clientSecret: string (required for auth via service principal)
-
-          - type: HIVE
-            config:
-              host: string
-              port: integer, default: 10000
-              username: string (required for regular auth)
-              kerberosEnabled: boolean, default: false
-              kerberosServicePrincipal: string (required if kerberosEnabled)
-              kerberosClientPrincipal: string (optional if kerberosEnabled)              
-              kerberosKrb5Conf: string (required if kerberosEnabled)
-              sslEnabled: boolean, default: false
-            secrets:
-              password: string (required for regular auth)
-              kerberosKeytab: base64-encoded string (required if kerberosEnabled)
-            ssl:
-              caCertificate: base64-encoded string
-
-          - type: MARIADB
-            config:
-              host: string
-              port: integer, default: 3306
-              username: string
-            secrets:
-              password: string
-
-          - type: MSSQL
-            config:
-              host: string
-              port: integer, default: 1433
-              username: string
-              database: string
-            secrets:
-             password: string
-
-          - type: MYSQL
-            config:
-              host: string
-              port: integer, default: 3306
-              username: string
-            secrets:
-              password: string
-
-          - type: ORACLE
-            config:
-              host: string
-              port: integer, default: 1521
-              username: string
-              connectionType: enum {SID, SERVICE_NAME}, default: SID
-              database: string, default: ORCL
-            secrets:
-              password: string
-
-          - type: POSTGRES
-            config:
-              host: string
-              port: integer, default: 5432
-              username: string
-              database: string
-              sslEnabled: boolean, default: false
-            secrets:
-              password: string
-            ssl:
-              rootCertificate: base64-encoded string 
-              sslCertificate: base64-encoded string
-              sslCertificateKey: base64-encoded string
-
-          - type: SNOWFLAKE
-            config:
-              account: string
-              username: string
-              warehouse: string, default: COMPUTE_WH
-              database: string
-            secrets:
-              password: string
-          ```
       operationId: "createConnector"
       tags: [ "Connectors" ]
       requestBody:
@@ -240,8 +119,6 @@ paths:
         Update a connector, and optionally validate the connection before saving.
 
         If validation fails, a 400 status with an error message will be returned.
-
-        For the structure of the config, secrets and ssl parameters, see the CREATE method.
       operationId: "patchConnector"
       tags: [ "Connectors" ]
       requestBody:
@@ -1531,13 +1408,13 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
+              type: "object"
               properties:
                 file:
-                  type: string
-                  format: binary
+                  type: "string"
+                  format: "binary"
               required:
-                - file
+                - "file"
       responses:
         "200":
           description: "OK"
@@ -1786,15 +1663,15 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: "object"
                 properties:
                   version:
-                    type: string
-                    description: Version number of the service
+                    type: "string"
+                    description: "The version number of the service."
                     example: "v209"
                   assistant:
-                    type: boolean
-                    description: Is the assistant service available
+                    type: "boolean"
+                    description: "A flag indicating if the assistant is enabled."
   /usage-report/periods:
     get:
       summary: "Retrieve usage report by Periods"
@@ -1972,7 +1849,7 @@ components:
           - "assistant-threads"
     connectorIdPath:
       name: "id"
-      description: "The unique identifier of a connector"
+      description: "The unique identifier of a connector."
       in: "path"
       required: true
       schema:
@@ -2037,63 +1914,63 @@ components:
       required: true
     generatorIdPath:
       name: "id"
-      description: "The unique identifier of a generator"
+      description: "The unique identifier of a generator."
       in: "path"
       required: true
       schema:
         type: "string"
     stepIdPath:
       name: "stepId"
-      description: "The unique identifier of a step"
+      description: "The unique identifier of a step."
       in: "path"
       required: true
       schema:
         type: "string"
     sourceTableIdPath:
       name: "tableId"
-      description: "The unique identifier of a source table"
+      description: "The unique identifier of a source table."
       in: "path"
       required: true
       schema:
         type: "string"
     sourceColumnIdPath:
       name: "columnId"
-      description: "The unique identifier of a source column"
+      description: "The unique identifier of a source column."
       in: "path"
       required: true
       schema:
         type: "string"
     sourceForeignKeyIdPath:
       name: "foreignKeyId"
-      description: "The unique identifier of a source foreign key"
+      description: "The unique identifier of a source foreign key."
       in: "path"
       required: true
       schema:
         type: "string"
     syntheticDatasetIdPath:
       name: "id"
-      description: "The unique identifier of a synthetic dataset"
+      description: "The unique identifier of a synthetic dataset."
       in: "path"
       required: true
       schema:
         type: "string"
     syntheticTableIdPath:
       name: "tableId"
-      description: "The unique identifier of a synthetic table"
+      description: "The unique identifier of a synthetic table."
       in: "path"
       required: true
       schema:
         type: "string"
     assistantThreadIdPath:
       name: "id"
-      description: "The unique identifier of a assistant thread"
+      description: "The unique identifier of a assistant thread."
       in: "path"
       required: true
       schema:
         type: "string"
     computeIdPath:
       name: "id"
-      description: "The unique identifier of a compute"
+      description: "The unique identifier of a compute."
       in: "path"
       required: true
       schema:
@@ -2104,14 +1981,15 @@ components:
     # Generic components
     BaseResource:
       type: "object"
+      description: "A set of common properties across resources."
       properties:
         id:
           type: "string"
           format: "uuid"
-          description: "The unique identifier of the entity"
+          description: "The unique identifier of the entity."
         name:
           type: "string"
-          description: "The name of the entity"
+          description: "The name of the entity."
         uri:
           $ref: "#/components/schemas/BaseResourceUri"
         currentUserPermissionLevel:
@@ -2173,7 +2051,7 @@ components:
     UserId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a user"
+      description: "The unique identifier of a user."
     UserFirstName:
       type: "string"
       description: "First name of a user"
@@ -2191,11 +2069,10 @@ components:
     PermissionLevel:
       type: "string"
       description: |
-        The permission level of the user or group with respect to this entity
-        - VIEW: The user can view and use the entity
-        - EDIT: The user can edit and share the entity
-        - ADMIN: The user can edit, share and delete the entity
-        There is only a single user per entity with ADMIN rights, and that user is the owner of the entity.
+        The permission level of the user with respect to this resource
+
+        - `VIEW`: The user can view and use the resource
+        - `ADMIN`: The user can edit, delete and transfer ownership of the resource
       enum:
         - "VIEW"
         - "EDIT"
@@ -2293,7 +2170,7 @@ components:
         id:
           type: "string"
           format: "uuid"
-          description: "The unique identifier of the notification"
+          description: "The unique identifier of the notification."
         type:
           $ref: "#/components/schemas/NotificationType"
         message:
@@ -2329,6 +2206,7 @@ components:
         - "RESOURCE_FAILED"
     Metadata:
       type: "object"
+      description: "The metadata of a resource."
       readOnly: true
       properties:
         createdAt:
@@ -2339,10 +2217,10 @@ components:
           example: "2023‐09‐07T18:40:39Z"
         ownerId:
           type: "string"
-          description: "The unique identifier of the owner of the entity"
+          description: "The unique identifier of the owner of the entity."
         ownerName:
           type: "string"
-          description: "The name of the owner of the entity"
+          description: "The name of the owner of the entity."
         currentUserPermissionLevel:
           $ref: "#/components/schemas/PermissionLevel"
         currentUserLikeStatus:
@@ -2401,18 +2279,37 @@ components:
     ConnectorId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a connector"
+      description: "The unique identifier of a connector."
     ConnectorName:
       type: "string"
-      description: "The name of a connector"
+      description: "The name of a connector."
     ConnectorAccessType:
       type: "string"
+      description: "The access type of a connector. Either `SOURCE` or `DESTINATION`."
       enum:
         - "SOURCE"
         - "DESTINATION"
       default: "SOURCE"
     ConnectorType:
       type: "string"
+      description: |
+        The type of a connector. 
+        
+        The type determines the structure of the config, secrets and ssl parameters.
+        
+        - `MYSQL`: MySQL database
+        - `POSTGRES`: PostgreSQL database
+        - `MSSQL`: Microsoft SQL Server database
+        - `ORACLE`: Oracle database
+        - `MARIADB`: MariaDB database
+        - `SNOWFLAKE`: Snowflake cloud data platform
+        - `BIGQUERY`: Google BigQuery cloud data warehouse
+        - `HIVE`: Apache Hive database
+        - `DATABRICKS`: Databricks cloud data platform
+        - `AZURE_STORAGE`: Azure Blob Storage
+        - `GOOGLE_CLOUD_STORAGE`: Google Cloud Storage
+        - `S3_STORAGE`: Amazon S3 Storage
+        - `FILE_UPLOAD`: File upload
       enum:
         - "MYSQL"
         - "POSTGRES"
@@ -2421,12 +2318,12 @@ components:
         - "MARIADB"
         - "SNOWFLAKE"
         - "BIGQUERY"
+        - "HIVE"
         - "DATABRICKS"
         - "AZURE_STORAGE"
         - "GOOGLE_CLOUD_STORAGE"
         - "S3_STORAGE"
         - "FILE_UPLOAD"
-        - "HIVE"
     ConnectorConfigParams:
       description: |
         The config parameters contain any configuration of the connector.
@@ -2455,6 +2352,7 @@ components:
       default: true
     ConnectorUsage:
       type: "object"
+      description: "Usage statistics of a connector."
       properties:
         noOfShares:
           type: "integer"
@@ -2464,6 +2362,7 @@ components:
           description: "Number of generators using this connector."
     ConnectorListItem:
       type: "object"
+      description: "Essential connector details for listings."
       properties:
         id:
           $ref: "#/components/schemas/ConnectorId"
@@ -2485,6 +2384,8 @@ components:
         - "metadata"
     Connector:
       type: "object"
+      description: |
+        A connector is a connection to a data source or a data destination.
       properties:
         id:
           $ref: "#/components/schemas/ConnectorId"
@@ -2518,6 +2419,127 @@ components:
         - "accessType"
     ConnectorConfig:
       type: "object"
+      description: |
+        The structures of the config, secrets and ssl parameters depend on the connector type.
+
+        - Cloud storage:
+          ```yaml
+          - type: AZURE_STORAGE
+            config:
+              accountName: string
+              clientId: string (required for auth via service principal)
+              tenantId: string (required for auth via service principal)
+            secrets:
+              accountKey: string (required for regular auth)
+              clientSecret: string (required for auth via service principal)
+
+          - type: GOOGLE_CLOUD_STORAGE
+            config:
+            secrets:
+              keyFile: string
+
+          - type: S3_STORAGE
+            config:
+              accessKey: string
+              endpointUrl: string (only needed for S3-compatible storage services other than AWS)
+              sslEnabled: boolean, default: false
+            secrets:
+              secretKey: string
+            ssl:
+              caCertificate: base64-encoded string              
+          ```
+        - Database:
+          ```yaml
+          - type: BIGQUERY
+            config:
+            secrets:
+              keyFile: string
+
+          - type: DATABRICKS
+            config:
+              host: string
+              httpPath: string
+              catalog: string
+              clientId: string (required for auth via service principal)
+              tenantId: string (required for auth via service principal)
+            secrets:
+              accessToken: string (required for regular auth)
+              clientSecret: string (required for auth via service principal)
+
+          - type: HIVE
+            config:
+              host: string
+              port: integer, default: 10000
+              username: string (required for regular auth)
+              kerberosEnabled: boolean, default: false
+              kerberosServicePrincipal: string (required if kerberosEnabled)
+              kerberosClientPrincipal: string (optional if kerberosEnabled)              
+              kerberosKrb5Conf: string (required if kerberosEnabled)
+              sslEnabled: boolean, default: false
+            secrets:
+              password: string (required for regular auth)
+              kerberosKeytab: base64-encoded string (required if kerberosEnabled)
+            ssl:
+              caCertificate: base64-encoded string
+
+          - type: MARIADB
+            config:
+              host: string
+              port: integer, default: 3306
+              username: string
+            secrets:
+              password: string
+
+          - type: MSSQL
+            config:
+              host: string
+              port: integer, default: 1433
+              username: string
+              database: string
+            secrets:
+             password: string
+
+          - type: MYSQL
+            config:
+              host: string
+              port: integer, default: 3306
+              username: string
+            secrets:
+              password: string
+
+          - type: ORACLE
+            config:
+              host: string
+              port: integer, default: 1521
+              username: string
+              connectionType: enum {SID, SERVICE_NAME}, default: SID
+              database: string, default: ORCL
+            secrets:
+              password: string
+
+          - type: POSTGRES
+            config:
+              host: string
+              port: integer, default: 5432
+              username: string
+              database: string
+              sslEnabled: boolean, default: false
+            secrets:
+              password: string
+            ssl:
+              rootCertificate: base64-encoded string 
+              sslCertificate: base64-encoded string
+              sslCertificateKey: base64-encoded string
+
+          - type: SNOWFLAKE
+            config:
+              account: string
+              username: string
+              warehouse: string, default: COMPUTE_WH
+              database: string
+            secrets:
+              password: string
+          ```
       properties:
         name:
           $ref: "#/components/schemas/ConnectorName"
@@ -2537,6 +2559,8 @@ components:
         - "type"
     ConnectorPatchConfig:
       type: "object"
+      description: |
+        See ConnectorConfig for details on the structure of the connection parameters.
       properties:
         name:
           $ref: "#/components/schemas/ConnectorName"
@@ -2553,13 +2577,13 @@ components:
     GeneratorId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a generator"
+      description: "The unique identifier of a generator."
     GeneratorName:
       type: "string"
-      description: "The name of a generator"
+      description: "The name of a generator."
     GeneratorDescription:
       type: "string"
-      description: "The description of a generator"
+      description: "The description of a generator."
     GeneratorAccuracy:
       type: "number"
       format: "double"
@@ -2572,6 +2596,7 @@ components:
       format: "date-time"
     GeneratorUsage:
       type: "object"
+      description: "Usage statistics of a generator."
       properties:
         totalDatapoints:
           type: "integer"
@@ -2593,6 +2618,7 @@ components:
           description: "Number of likes of this generator."
     GeneratorListItem:
       type: "object"
+      description: "Essential generator details for listings."
       properties:
         id:
           $ref: "#/components/schemas/GeneratorId"
@@ -2614,6 +2640,10 @@ components:
         - "metadata"
     Generator:
       type: "object"
+      description: |
+        A generator is a set models that can generate synthetic data.
+        
+        The generator can be trained on one or more source tables. A quality assurance report is generated for each model.
       properties:
         id:
           $ref: "#/components/schemas/GeneratorId"
@@ -2644,13 +2674,13 @@ components:
     SourceTableId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a source table"
+      description: "The unique identifier of a source table."
     SourceTableName:
       type: "string"
       description: "The name of a source table. It must be unique within a generator."
     SourceTablePrimaryKey:
-      type: string
-      description: The column name of the primary key
+      type: "string"
+      description: "The column name of the primary key."
     SourceTableLocation:
       type: "string"
       description: |
@@ -2689,14 +2719,14 @@ components:
           items:
             $ref: "#/components/schemas/SourceColumn"
         foreignKeys:
-          type: array
-          description: The foreign keys of a table.
+          type: "array"
+          description: "The foreign keys of a table."
           items:
             $ref: "#/components/schemas/SourceForeignKey"
         modelMetrics:
-          $ref: "#/components/schemas/ModelMetrics"
+          $ref: "./metrics.yaml#/components/schemas/ModelMetrics"
         languageModelMetrics:
-          $ref: "#/components/schemas/ModelMetrics"
+          $ref: "./metrics.yaml#/components/schemas/ModelMetrics"
         modelConfiguration:
           $ref: "#/components/schemas/ModelConfiguration"
         languageModelConfiguration:
@@ -2705,7 +2735,6 @@ components:
           $ref: "#/components/schemas/SourceTableTotalRows"
       required:
         - "id"
-        - "sourceConnectorId"
         - "name"
         - "columns"
         - "model"
@@ -2714,10 +2743,10 @@ components:
       type: "string"
       readOnly: true
       format: "uuid"
-      description: "The unique identifier of a source column"
+      description: "The unique identifier of a source column."
     SourceColumnName:
       type: "string"
-      description: "The name of a source column"
+      description: "The name of a source column."
     SourceColumnIncluded:
       type: "boolean"
       default: true
@@ -2725,11 +2754,11 @@ components:
         If true, the column will be included in the training.
         If false, the column will be excluded from the training.
     Probe:
-      type: object
+      type: "object"
       properties:
         name:
-          type: string
-          description: The name of the table
+          type: "string"
+          description: "The name of the table."
         rows:
           $ref: "#/components/schemas/Samples"
     Samples:
@@ -2780,18 +2809,18 @@ components:
         - "modelEncodingType"
     # Source ForeignKey
     SourceForeignKeyId:
-      type: string
+      type: "string"
       readOnly: true
-      format: uuid
-      description: The unique identifier of a foreign key
+      format: "uuid"
+      description: "The unique identifier of a foreign key."
     ForeignKeyColumn:
-      type: string
-      description: The column name of a foreign key.
+      type: "string"
+      description: "The column name of a foreign key."
     ForeignKeyReferencedTable:
-      type: string
-      description: The table name of the referenced table. That table must have a primary key already defined.
+      type: "string"
+      description: "The table name of the referenced table. That table must have a primary key already defined."
     ForeignKeyIsContext:
-      type: boolean
+      type: "boolean"
       description: |
         If true, then the foreign key will be considered as a context relation.
         Note, that only one foreign key relation per table can be a context relation.
@@ -2884,6 +2913,8 @@ components:
           description: "The column configurations of this table."
           items:
             $ref: "#/components/schemas/SourceColumnConfig"
+      required:
+        - "name"
     SourceTablePatchConfig:
       type: "object"
       properties:
@@ -2917,8 +2948,6 @@ components:
       properties:
         name:
           $ref: "#/components/schemas/SourceColumnName"
-        included:
-          $ref: "#/components/schemas/SourceColumnIncluded"
         modelEncodingType:
           $ref: "#/components/schemas/ModelEncodingType"
       required:
@@ -2952,8 +2981,7 @@ components:
     # MODEL
     ModelId:
       type: "string"
-      description:
-        The model to be used for training.
+      description: "The model to be used for training."
       example:
         - MOSTLY_AI/Small
         - MOSTLY_AI/Medium
@@ -2962,12 +2990,17 @@ components:
         - microsoft/phi-1_5
     ModelType:
       type: "string"
+      description: |
+        The type of model.
+
+        - `TABULAR`: A generative AI model tailored towards tabular data, trained from scratch.
+        - `LANGUAGE`: A generative AI model build upon a (pre-trained) language model.
       enum:
         - "TABULAR"
         - "LANGUAGE"
     ModelConfiguration:
       type: "object"
-      description: "The training configuration for the AI model"
+      description: "The training configuration for the model"
       properties:
         model:
           $ref: "#/components/schemas/ModelId"
@@ -2986,13 +3019,15 @@ components:
           minimum: 1
           maximum: 1000000
         maxTrainingTime:
-          type: "integer"
+          type: "number"
+          format: "double"
           description: The maximum number of minutes to train the model.
           default: 10
           minimum: 0
           maximum: 100000
         maxEpochs:
-          type: "integer"
+          type: "number"
+          format: "double"
           description: The maximum number of epochs to train the model.
           default: 100
           minimum: 0
@@ -3060,103 +3095,6 @@ components:
           default: 1.0
           minimum: 0.0
           maximum: 10000.0
-    ModelMetrics:
-      type: "object"
-      properties:
-        accuracy:
-          type: "object"
-          properties:
-            overall:
-              description: |
-                The overall accuracy of the model.
-                This is the average of univariate, bivariate and coherence accuracies.
-                Accuracy is defined as (100% - Total Variation Distance) for each distribution, and then averaged across.
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
-            univariate:
-              description: |
-                The average accuracy of the discretized univariate distributions.
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
-            bivariate:
-              description: |
-                The average accuracy of the discretized bivariate distributions.
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
-            coherence:
-              description: |
-                The average accuracy of the discretized coherence distributions.
-                Only applicable for sequential models.
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
-            overallMax:
-              description: |
-                The expected accuracy of a holdout dataset of same size as synthetic dataset.
-                This serves as a reference for the overall accuracy of the trained generator.
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
-        distances:
-          type: "object"
-          properties:
-            dcrTraining:
-              description: "The average distance to closest record (L2) between synthetic and training samples within the embedding space."
-              type: "number"
-              format: "double"
-              minimum: 0.0
-            dcrHoldout:
-              description: "The average distance to closest record (L2) between synthetic and holdout samples within the embedding space."
-              type: "number"
-              format: "double"
-              minimum: 0.0
-            dcrOriginal:
-              description: "(DEPRECATED) The average DCR between the original records."
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              deprecated: true
-            dcrSynthetic:
-              description: "(DEPRECATED) The average DCR between the synthetic and the original records."
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              deprecated: true
-        similarity:
-          type: "object"
-          properties:
-            cosineSimilarityTrainingSynthetic:
-              description: "The cosine similarity between the training samples centroid and the synthetic samples centroid within the embedding space."
-              type: "number"
-              format: "double"
-              minimum: -1.0
-              maximum: 1.0
-            cosineSimilarityTrainingHoldout:
-              description: "The cosine similarity between the training samples centroid and the holdout samples centroid within the embedding space."
-              type: "number"
-              format: "double"
-              minimum: -1.0
-              maximum: 1.0
-            discriminatorAUCTrainingSynthetic:
-              description: "The cross-validated average AUC of discriminating between training embeddings ans synthetic embeddings."
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
-            discriminatorAUCTrainingHoldout:
-              description: "The cross-validated average AUC of discriminating between training embeddings ans holdout embeddings."
-              type: "number"
-              format: "double"
-              minimum: 0.0
-              maximum: 1.0
 
     # JOB_PROGRESS
     JobProgress:
@@ -3204,7 +3142,7 @@ components:
         restarts:
           type: "integer"
           format: "int32"
-          description: Number of previous restarts for the corresponding task.
+          description: "The number of previous restarts for the corresponding task."
         stepCode:
           type: "string"
           enum:
@@ -3278,19 +3216,20 @@ components:
     SyntheticDatasetId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a synthetic dataset"
+      description: "The unique identifier of a synthetic dataset."
     SyntheticDatasetName:
       type: "string"
-      description: "The name of a synthetic dataset"
+      description: "The name of a synthetic dataset."
     SyntheticDatasetDescription:
       type: "string"
-      description: "The description of a synthetic dataset"
+      description: "The description of a synthetic dataset."
     SyntheticDatasetGenerationTime:
       type: "string"
       description: "The UTC date and time when the generation has finished."
       format: "date-time"
     SyntheticDatasetUsage:
       type: "object"
+      description: "Usage statistics of a synthetic dataset."
       properties:
         totalDatapoints:
           type: "integer"
@@ -3313,6 +3252,7 @@ components:
             description: "Number of likes of this synthetic dataset."
     SyntheticDatasetListItem:
       type: "object"
+      description: "Essential synthetic dataset details for listings."
       properties:
         id:
           $ref: "#/components/schemas/SyntheticDatasetId"
@@ -3335,6 +3275,10 @@ components:
         - "metadata"
     SyntheticDataset:
       type: "object"
+      description: |
+        A synthetic dataset is created based on a trained generator. 
+        
+        It consists of synthetic samples, as well as a quality assurance report.
       properties:
         id:
           $ref: "#/components/schemas/SyntheticDatasetId"
@@ -3438,7 +3382,7 @@ components:
             - male: 0.5
               female: 0.5
           additionalProperties:
-            type: number
+            type: "number"
             format: "double"
     SyntheticTableImputation:
       type: "array"
@@ -3492,7 +3436,7 @@ components:
     SyntheticTableId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a synthetic table"
+      description: "The unique identifier of a synthetic table."
     SyntheticTableName:
       type: "string"
       description: "The name of a synthetic table. This matches the name of a corresponding SourceTable."
@@ -3514,9 +3458,9 @@ components:
         configuration:
           $ref: "#/components/schemas/SyntheticTableConfiguration"
         modelMetrics:
-          $ref: "#/components/schemas/ModelMetrics"
+          $ref: "./metrics.yaml#/components/schemas/ModelMetrics"
         languageModelMetrics:
-          $ref: "#/components/schemas/ModelMetrics"
+          $ref: "./metrics.yaml#/components/schemas/ModelMetrics"
         foreignKeys:
           type: "array"
           description: The foreign keys of this table.
@@ -3538,6 +3482,8 @@ components:
           $ref: "#/components/schemas/SyntheticTableTotalDatapoints"
         sourceTableTotalRows:
           $ref: "#/components/schemas/SourceTableTotalRows"
+      required:
+        - name
     # Delivery
     SyntheticDatasetDelivery:
       type: "object"
@@ -3603,6 +3549,8 @@ components:
           $ref: "#/components/schemas/SyntheticTableName"
         configuration:
           $ref: "#/components/schemas/SyntheticTableConfiguration"
+      required:
+        - "name"
 
     # ASSISTANT
     AssistantSettingsIsEnabled:
@@ -3665,10 +3613,10 @@ components:
     AssistantThreadId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a assistant thread"
+      description: "The unique identifier of a assistant thread."
     AssistantThreadName:
       type: "string"
-      description: "The name of a assistant thread"
+      description: "The name of a assistant thread."
     AssistantThreadSessionStatus:
       type: "string"
       enum:
@@ -3677,6 +3625,7 @@ components:
         - "expired"
     AssistantThreadListItem:
       type: "object"
+      description: "Essential assistant thread details for listings."
       properties:
         id:
           $ref: "#/components/schemas/AssistantThreadId"
@@ -3720,13 +3669,10 @@ components:
             $ref: "#/components/schemas/AssistantMessage"
         usage:
           $ref: "#/components/schemas/AssistantThreadUsage"
-    AssistantTokenUsage:
-      type: "number"
-      format: "int64"
     AssistantMessageId:
       type: "string"
       format: "uuid"
-      description: "The unique identifier of a assistant message"
+      description: "The unique identifier of a assistant message."
     AssistantMessageRole:
       type: "string"
       description: "The role of the author of this message"
@@ -3775,7 +3721,7 @@ components:
         finishReason:
           $ref: "#/components/schemas/AssistantMessageFinishReason"
         tokensConsumed:
-          type: "number"
+          type: "integer"
           format: "int64"
           description: "The number of tokens consumed by the assistant message."
     AssistantMessageDelta:
@@ -3793,7 +3739,7 @@ components:
         finishReason:
           $ref: "#/components/schemas/AssistantMessageFinishReason"
         tokensConsumed:
-          type: "number"
+          type: "integer"
           format: "int64"
           description: "The number of tokens consumed by the model."
     AssistantThreadUsage:
@@ -3803,7 +3749,7 @@ components:
           type: "integer"
           description: "Number of shares of this assistant thread."
         totalTokensConsumed:
-          type: "number"
+          type: "integer"
           format: "int64"
           description: "The total number of tokens consumed by the thread."
     # Assistant Configs
@@ -3839,6 +3785,7 @@ components:
       type: "string"
     ComputeType:
       type: "string"
+      description: "The type of compute."
       enum:
         - "KUBERNETES"
         - "DATABRICKS"
@@ -3847,6 +3794,7 @@ components:
       description: "The index for determining the sort order when listing computes"
     ComputeResources:
       type: "object"
+      description: "A set of available hardware resources for a compute resource."
       properties:
         cpus:
           type: "integer"
@@ -3872,6 +3820,7 @@ components:
       additionalProperties: { }
     ComputeListItem:
       type: "object"
+      description: "Essential compute details for listings."
       properties:
         id:
           $ref: "#/components/schemas/ComputeId"
@@ -3883,6 +3832,7 @@ components:
           $ref: "#/components/schemas/ComputeResources"
     Compute:
       type: "object"
+      description: "A compute resource for executing tasks."
       properties:
         id:
           $ref: "#/components/schemas/ComputeId"
@@ -3901,6 +3851,7 @@ components:
     # Compute Configs
     ComputeConfig:
       type: "object"
+      description: "The configuration for creating a new compute resource."
       properties:
         name:
           $ref: "#/components/schemas/ComputeName"

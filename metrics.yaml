@@ -1,0 +1,182 @@
+components:
+  schemas:
+    ModelMetrics:
+      type: "object"
+      properties:
+        accuracy:
+          $ref: "#/components/schemas/Accuracy"
+        distances:
+          $ref: "#/components/schemas/Distances"
+        similarity:
+          $ref: "#/components/schemas/Similarity"
+    Accuracy:
+      type: "object"
+      description: |
+        Metrics regarding the accuracy of synthetic data, measured as the closeness of discretized lower dimensional
+        marginal distributions.
+        
+        1. **Univariate Accuracy**: The accuracy of the univariate distributions for all target columns.
+        2. **Bivariate Accuracy**: The accuracy of all pair-wise distributions for target columns, as well as for target
+        columns with respect to the context columns.
+        3. **Coherence Accuracy**: The accuracy of the auto-correlation for all target columns.
+        
+        Accuracy is defined as 100% - [Total Variation Distance](https://en.wikipedia.org/wiki/Total_variation_distance_of_probability_measures) (TVD),
+        whereas TVD is half the sum of the absolute differences of the relative frequencies of the corresponding
+        distributions.
+        
+        These accuracies are calculated for all discretized univariate, and bivariate distributions. In case of sequential
+        data, also for all coherence distributions. Overall metrics are then calculated as the average across these
+        accuracies.
+        
+        All metrics can be compared against a theoretical maximum accuracy, which is calculated for a same-sized holdout.
+        The accuracy metrics shall be as close as possible to the theoretical maximum, but not significantly higher, as
+        this would indicate overfitting.
+      properties:
+        overall:
+          description: |
+            Overall accuracy of synthetic data, averaged across univariate, bivariate, and coherence.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        univariate:
+          description: |
+            Average accuracy of discretized univariate distributions.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        bivariate:
+          description: |
+            Average accuracy of discretized bivariate distributions.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        coherence:
+          description: |
+            Average accuracy of discretized coherence distributions. Only applicable for sequential data.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        overallMax:
+          description: |
+            Expected overall accuracy of a same-sized holdout. Serves as a reference for `overall`.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        univariateMax:
+          description: |
+            Expected univariate accuracy of a same-sized holdout. Serves as a reference for `univariate`.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        bivariateMax:
+          description: |
+            Expected bivariate accuracy of a same-sized holdout. Serves as a reference for `bivariate`.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        coherenceMax:
+          description: |
+            Expected coherence accuracy of a same-sized holdout. Serves as a reference for `coherence`.
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+    Similarity:
+      type: "object"
+      description: |
+        Metrics regarding the similarity of the full joint distributions of samples within an embedding space.
+        
+        1. **Cosine Similarity**: The cosine similarity between the centroids of synthetic and training samples.
+        2. **Discriminator AUC**: The AUC of a discriminative model to distinguish between synthetic and training samples.
+        
+        The SentenceTransformer model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) is
+        used to compute the embeddings of a string-ified representation of individual records. In case of sequential data
+        the records, that belong to the same group, are being concatenated. We then calculate the cosine similarity
+        between the centroids of the provided datasets within the embedding space.
+        
+        Again, we expect the similarity metrics to be as close as possible to 1, but not significantly higher than what is
+        measured for the holdout data, as this would again indicate overfitting.
+        
+        In addition, a discriminative ML model is trained to distinguish between training and synthetic samples. The
+        ability of this model to distinguish between training and synthetic samples is measured by the AUC score. For
+        synthetic data to be considered realistic, the AUC score should be close to 0.5, which indicates that the synthetic
+        data is indistinguishable from the training data.
+      properties:
+        cosineSimilarityTrainingSynthetic:
+          description: "Cosine similarity between training and synthetic centroids."
+          type: "number"
+          format: "double"
+          minimum: -1.0
+          maximum: 1.0
+        cosineSimilarityTrainingHoldout:
+          description: "Cosine similarity between training and holdout centroids. Serves as a reference for `cosine_similarity_training_synthetic`."
+          type: "number"
+          format: "double"
+          minimum: -1.0
+          maximum: 1.0
+        discriminatorAUCTrainingSynthetic:
+          description: "Cross-validated AUC of a discriminative model to distinguish between training and synthetic samples."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        discriminatorAUCTrainingHoldout:
+          description: "Cross-validated AUC of a discriminative model to distinguish between training and holdout samples. Serves as a reference for `discriminator_auc_training_synthetic`."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+    Distances:
+      type: "object"
+      description: |
+        Metrics regarding the nearest neighbor distances between training, holdout, and synthetic samples in an embedding
+        space. Useful for assessing the novelty / privacy of synthetic data.
+        
+        The provided data is first down-sampled, so that the number of samples match across all datasets. Note, that for
+        an optimal sensitivity of this privacy assessment it is recommended to use a 50/50 split between training and
+        holdout data, and then generate synthetic data of the same size.
+        
+        The embeddings of these samples are then computed, and the L2 nearest neighbor distances are calculated for each
+        synthetic sample to the training and holdout samples. Based on these nearest neighbor distances the following
+        metrics are calculated:
+          - Identical Match Share (IMS): The share of synthetic samples that are identical to a training or holdout sample.
+          - Distance to Closest Record (DCR): The average distance of synthetic to training or holdout samples.
+        
+        For privacy-safe synthetic data we expect to see about as many identical matches, and about the same distances
+        for synthetic samples to training, as we see for synthetic samples to holdout.
+      properties:
+        imsTraining:
+          description: "Share of synthetic samples that are identical to a training sample."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        imsHoldout:
+          description: "Share of synthetic samples that are identical to a holdout sample. Serves as a reference for `ims_training`."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
+        dcrTraining:
+          description: "Average L2 nearest-neighbor distance between synthetic and training samples."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+        dcrHoldout:
+          description: "Average L2 nearest-neighbor distance between synthetic and holdout samples. Serves as a reference for `dcr_training`."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+        dcrShare:
+          description: "Share of synthetic samples that are closer to a training sample than to a holdout sample. This should not be significantly larger than 50%."
+          type: "number"
+          format: "double"
+          minimum: 0.0
+          maximum: 1.0
